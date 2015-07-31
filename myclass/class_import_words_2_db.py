@@ -5,7 +5,7 @@
 # Description:
 #             import file's words of lines in sogou_cellbase-utf8.txt
 #      to database named "chinese_wordsDB"'s table "chinese_words_table",
-#      which contains (id, word, pinyin, explan, )
+#      which contains (id, word, pinyin, meaning, )
 
 # Author: Shuai Yuan
 # E-mail: ysh329@sina.com
