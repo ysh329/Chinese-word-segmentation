@@ -15,6 +15,7 @@ __author__ = 'yuens'
 ################################### PART1 IMPORT ######################################
 import MySQLdb
 import sys
+import os
 import re
 from time import clock
 ################################### PART2 CLASS && FUNCTION ###########################
@@ -68,7 +69,7 @@ class import_words_2_db(object):
         sqls.append("CREATE INDEX id_idx ON %s(id)" % table_name)
         #print sqls
         try:
-            map(lambda x: cursor.execute(x), sqls)
+            map(lambda sql:cursor.execute(sql), sqls)
             self.con.commit()
         except MySQLdb.Error, e:
             self.con.rollback()
@@ -81,10 +82,12 @@ class import_words_2_db(object):
 
         cursor = self.con.cursor()
         sqls = ["ALTER DATABASE %s DEFAULT CHARACTER SET 'UTF8'" % database_name]
+        sqls.append("SET NAMES UTF8")
+        '''
         sqls.append("SET CHARACTER_SET_DATABASE=UTF8")
         sqls.append("SET CHARACTER_SET_FILESYSTEM=UTF8")
         sqls.append("SET CHARACTER_SET_SERVER=UTF8")
-        sqls.append("SET NAMES UTF8")
+        '''
         try:
             map(lambda sql: cursor.execute(sql), sqls)
             self.con.commit()
@@ -150,13 +153,68 @@ class import_words_2_db(object):
 
 
 
+    def insert_stopwords_from_file_2_db(self, file_dir, database_name, table_name):
+        print "prepare insert stopwords to database."
+        cur_directory_list = os.listdir(file_dir)
+        stopwords_file_list = filter(lambda file_name: file_name.find("stopwords") > -1, cur_directory_list)
+
+        stopwords_file_directory_list = map(lambda file_name:os.path.join(file_dir, file_name), stopwords_file_list)
+        source = "stopwords:" + ",".join(sum(map(lambda file_name: re.compile('(.*)_stopword').findall(file_name), cur_directory_list), []))
+        print "source:", source
+        #try:
+        f_stopwords_list = map(lambda file_dir: open(file_dir), stopwords_file_directory_list)
+        stopwords_file_list = map(lambda f: f.readlines(), f_stopwords_list)
+        stopwords_list = map(lambda stopword: stopword.strip(), set(sum(stopwords_file_list, [])))
+        print "len(stopwords_list):", len(stopwords_list)
+
+
+        # [method #1]
+        for idx in xrange(len(stopwords_list)):
+            stopword = stopwords_list[idx]
+            self.insert_stopword_2_db(database_name = database_name,\
+                                      table_name = table_name,\
+                                      stopword = stopword,\
+                                      source = source)
+            # [method #2]
+            #map(lambda stopword: self.insert_stopword_2_db(database_name, table_name, stopword, source), stopwords_list)
+        '''
+        except:
+            print "Out of memory."
+            return
+        '''
+        print "insert task of stopwords finished."
+
+
+    def insert_stopword_2_db(self, database_name, table_name, stopword, source):
+#        self.con = MySQLdb.connect(host = "localhost", user = "root", passwd = "931209", db = table_name, charset = "utf8")
+        cursor = self.con.cursor()
+        try:
+            cursor.execute("""SELECT id FROM %s.%s WHERE word='%s'""" % (database_name, table_name, stopword))
+            word_exist = cursor.fetchone() > 0
+            if word_exist:
+                cursor.execute("""UPDATE %s.%s SET type1='stopword', source='%s' WHERE word='%s'""" % (database_name, table_name, source, stopword))
+                self.con.commit()
+            else:
+                cursor.execute("""INSERT INTO %s.%s(word, pinyin, showtimes, weight, meaning, cixing, type1, type2, source) VALUES('%s', '', 0, 0.0, 'ex', 'cx', 'stopword', 'tx', '%s')""" % (database_name, table_name, stopword, source))
+                self.con.commit()
+        except MySQLdb.Error, e:
+            self.con.rollback()
+            print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+
+
+
 ################################### PART3 CLASS TEST ##################################
 # initial parameters
 database_name = "wordsDB"
 table_name = "chinese_word_table"
-file_dir = "../data/sogou_cellbase-utf8.txt"
+general_words_file_dir = "../data/sogou_cellbase-utf8.txt"
+stopwords_base_dir = "../data/"
 
 test = import_words_2_db()
+
 test.create_database(database_name = database_name)
 test.create_table(database_name= database_name, table_name = table_name)
-test.insert_words_from_file_2_db(file_dir = file_dir, database_name = database_name, table_name = table_name)
+'''
+test.insert_words_from_file_2_db(file_dir = general_words_file_dir, database_name = database_name, table_name = table_name)
+'''
+test.insert_stopwords_from_file_2_db(file_dir = stopwords_base_dir, database_name = database_name, table_name = table_name)
