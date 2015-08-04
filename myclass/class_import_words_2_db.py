@@ -21,14 +21,14 @@ import time
 ################################### PART2 CLASS && FUNCTION ###########################
 class import_words_2_db(object):
     def __init__(self):
+        print "start at:" + time.strftime('%Y-%m-%d %X', time.localtime())
         self.start = time.clock()
-
-
 
     def __del__(self):
         self.con.close()
         self.stop = time.clock()
         print "The function run time is : %.03f seconds" % (self.stop - self.start)
+        print "end at:" + time.strftime('%Y-%m-%d %X', time.localtime())
 
 
 
@@ -80,6 +80,8 @@ class import_words_2_db(object):
 
 
     def insert_words_from_file_2_db(self, file_dir, database_name, table_name):
+        print "start insert words from file to databse at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        self.words_start_time = time.clock()
 
         cursor = self.con.cursor()
         sqls = ["ALTER DATABASE %s DEFAULT CHARACTER SET 'UTF8'" % database_name]
@@ -134,11 +136,13 @@ class import_words_2_db(object):
                 except MySQLdb.Error, e:
                     self.con.rollback()
                     print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
-
+            self.words_end_time = time.clock()
+            print "insert task of general words finished at " + time.strftime('%Y-%m-%d %X', time.localtime()) + "."
+            print "elapsed time of general words insert task: %05f seconds." % (self.words_end_time - self.words_start_time)
             print "summation of words:%d." % counter
             print "success inserted words:%d." % success_counter
             print "insert success rate:%f." % (success_counter / float(counter))
-        print "Completed words insert task."
+            print "Completed words insert task."
 
 
 
@@ -155,7 +159,7 @@ class import_words_2_db(object):
 
 
     def insert_stopwords_from_file_2_db(self, file_dir, database_name, table_name):
-        print "prepare insert stopwords to database."
+        print "start insert stopwords to database at " + time.strftime('%Y-%m-%d %X', time.localtime()) + "."
         cur_directory_list = os.listdir(file_dir)
         stopwords_file_list = filter(lambda file_name: file_name.find("stopwords") > -1, cur_directory_list)
 
@@ -171,19 +175,19 @@ class import_words_2_db(object):
         self.stopwords_success_counter = 0
         self.stopwords_start_time = time.clock()
         # [method #1]
-        #'''
+        '''
         for idx in xrange(len(stopwords_list)):
             stopword = stopwords_list[idx]
             self.insert_stopword_2_db(database_name = database_name,\
                                       table_name = table_name,\
                                       stopword = stopword,\
                                       source = source)
-        #'''
+        '''
         # [method #2]
-        #map(lambda stopword: self.insert_stopword_2_db(database_name, table_name, stopword, source), stopwords_list)
+        map(lambda stopword: self.insert_stopword_2_db(database_name, table_name, stopword, source), stopwords_list)
 
         self.stopwords_end_time = time.clock()
-        print "insert task of stopwords finished."
+        print "insert task of stopwords finished at " + time.strftime('%Y-%m-%d %X', time.localtime()) + "."
         print "elapsed time of stopwords insert task: %05f seconds." % (self.stopwords_end_time - self.stopwords_start_time)
         print "all insert num.(contain failed records):", len(stopwords_list)
         print "sucess insert num.:", self.stopwords_success_counter
@@ -197,16 +201,37 @@ class import_words_2_db(object):
             cursor.execute("""SELECT id FROM %s.%s WHERE word="%s" """ % (database_name, table_name, stopword))
             word_exist = cursor.fetchone() > 0
             if word_exist:
-                sql = """UPDATE %s.%s
+                if source == '\\':
+                    sql = """UPDATE %s.%s
                  SET type1='stopword',
                   source='%s'
-                   WHERE word='%s'""" % (database_name, table_name, source, stopword)
+                   WHERE word='\\'""" % (database_name, table_name, source)
+                elif source == '"':
+                    sql = """UPDATE %s.%s
+                 SET type1='stopword',
+                  source='%s'
+                   WHERE word='"'""" % (database_name, table_name, source)
+                else:
+                    sql = """UPDATE %s.%s
+                 SET type1='stopword',
+                  source='%s'
+                   WHERE word="%s" """ % (database_name, table_name, source, stopword)
                 cursor.execute(sql)
                 self.con.commit()
             else:
-                cursor.execute("""INSERT INTO %s.%s
+                if source == '\\':
+                    sql = """INSERT INTO %s.%s
                 (word, pinyin, showtimes, weight, meaning, cixing, type1, type2, source)
-                VALUES("%s", '', 0, 0.0, 'ex', 'cx', 'stopword', 'tx', '%s')""" % (database_name, table_name, stopword, source))
+                VALUES('\\', '', 0, 0.0, 'ex', 'cx', 'stopword', 'tx', '%s')""" % (database_name, table_name, source)
+                elif source == '"':
+                    sql = """INSERT INTO %s.%s
+                (word, pinyin, showtimes, weight, meaning, cixing, type1, type2, source)
+                VALUES('"', '', 0, 0.0, 'ex', 'cx', 'stopword', 'tx', '%s')""" % (database_name, table_name, source)
+                else:
+                    sql = """INSERT INTO %s.%s
+                (word, pinyin, showtimes, weight, meaning, cixing, type1, type2, source)
+                VALUES("%s", '', 0, 0.0, 'ex', 'cx', 'stopword', 'tx', '%s')""" % (database_name, table_name, stopword, source)
+                cursor.execute(sql)
                 self.con.commit()
             self.stopwords_success_counter += 1
         except MySQLdb.Error, e:

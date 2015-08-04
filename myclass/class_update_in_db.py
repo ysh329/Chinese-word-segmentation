@@ -31,6 +31,13 @@ class update_in_db(object):
         self.con.close()
         print "Quit MySQL database successfully."
 
+    def remove_repeated_reocrd(self):
+        """according to the value of field word"""
+        pass
+
+    def update_id_field(self):
+        pass
+
     def update_pinyin_field(self):
         '''recognize_char_type'''
         pass
