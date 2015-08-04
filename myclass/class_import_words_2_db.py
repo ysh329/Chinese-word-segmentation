@@ -185,6 +185,21 @@ class import_words_2_db(object):
         '''
         # [method #2]
         map(lambda stopword: self.insert_stopword_2_db(database_name, table_name, stopword, source), stopwords_list)
+        # insert word " abd \
+        '''
+        try:
+            cursor = self.con.cursor()
+            cursor.execute('insert wordsDB.chinese_word_table(word, pinyin, showtimes, weight, meaning, cixing, type1, type2, source) VALUES("\\", "", 0, 0.0, "ex", "cx", "stopword", "t2", "stopwords:hit,chinese,scu,sc_ot,baidu")')
+            self.con.commit()
+            self.stopwords_success_counter += 1
+            cursor.execute("insert wordsDB.chinese_word_table(word, pinyin, showtimes, weight, meaning, cixing, type1, type2, source) VALUES('\"', '', 0, 0.0, 'ex', 'cx', 'stopword', 't2', 'stopwords:hit,chinese,scu,sc_ot,baidu')")
+            self.con.commit()
+            self.stopwords_success_counter += 1
+            print "insert words('\\' and '\"') successfully."
+        except MySQLdb.Error, e:
+            self.con.rollback()
+            print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+        '''
 
         self.stopwords_end_time = time.clock()
         print "insert task of stopwords finished at " + time.strftime('%Y-%m-%d %X', time.localtime()) + "."
@@ -195,23 +210,12 @@ class import_words_2_db(object):
 
 
     def insert_stopword_2_db(self, database_name, table_name, stopword, source):
-#        self.con = MySQLdb.connect(host = "localhost", user = "root", passwd = "931209", db = table_name, charset = "utf8")
         cursor = self.con.cursor()
         try:
             cursor.execute("""SELECT id FROM %s.%s WHERE word="%s" """ % (database_name, table_name, stopword))
             word_exist = cursor.fetchone() > 0
             if word_exist:
-                if source == '\\':
-                    sql = """UPDATE %s.%s
-                 SET type1='stopword',
-                  source='%s'
-                   WHERE word='\\'""" % (database_name, table_name, source)
-                elif source == '"':
-                    sql = """UPDATE %s.%s
-                 SET type1='stopword',
-                  source='%s'
-                   WHERE word='"'""" % (database_name, table_name, source)
-                else:
+                if source != '\\' or source != '"':
                     sql = """UPDATE %s.%s
                  SET type1='stopword',
                   source='%s'
@@ -219,21 +223,14 @@ class import_words_2_db(object):
                 cursor.execute(sql)
                 self.con.commit()
             else:
-                if source == '\\':
+                if source != '\\' or source != '"':
                     sql = """INSERT INTO %s.%s
                 (word, pinyin, showtimes, weight, meaning, cixing, type1, type2, source)
-                VALUES('\\', '', 0, 0.0, 'ex', 'cx', 'stopword', 'tx', '%s')""" % (database_name, table_name, source)
-                elif source == '"':
-                    sql = """INSERT INTO %s.%s
-                (word, pinyin, showtimes, weight, meaning, cixing, type1, type2, source)
-                VALUES('"', '', 0, 0.0, 'ex', 'cx', 'stopword', 'tx', '%s')""" % (database_name, table_name, source)
-                else:
-                    sql = """INSERT INTO %s.%s
-                (word, pinyin, showtimes, weight, meaning, cixing, type1, type2, source)
-                VALUES("%s", '', 0, 0.0, 'ex', 'cx', 'stopword', 'tx', '%s')""" % (database_name, table_name, stopword, source)
+                VALUES("%s", '', 0, 0.0, 'ex', 'cx', 'stopword', 't2', '%s')""" % (database_name, table_name, stopword, source)
                 cursor.execute(sql)
                 self.con.commit()
             self.stopwords_success_counter += 1
+            print "self.stopwords_success_counter:", self.stopwords_success_counter
         except MySQLdb.Error, e:
             print '|'+stopword+'|'
             self.con.rollback()
