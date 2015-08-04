@@ -5,7 +5,7 @@
 # Description:
 #             import file's words of lines in sogou_cellbase-utf8.txt
 #      to database named "chinese_wordsDB"'s table "chinese_words_table",
-#      which contains (id, word, pinyin, meaning, )
+#      which contains 10 fields(id, word, pinyin, showtimes, weight, meaning, cixing, type1, type2, source).
 
 # Author: Shuai Yuan
 # E-mail: ysh329@sina.com
@@ -17,17 +17,18 @@ import MySQLdb
 import sys
 import os
 import re
-from time import clock
+import time
 ################################### PART2 CLASS && FUNCTION ###########################
 class import_words_2_db(object):
     def __init__(self):
-        self.start = clock()
+        self.start = time.clock()
 
 
 
     def __del__(self):
         self.con.close()
-        print "The function run time is : %.03f seconds" % (clock() - self.start)
+        self.stop = time.clock()
+        print "The function run time is : %.03f seconds" % (self.stop - self.start)
 
 
 
@@ -167,44 +168,56 @@ class import_words_2_db(object):
         stopwords_list = map(lambda stopword: stopword.strip(), set(sum(stopwords_file_list, [])))
         print "len(stopwords_list):", len(stopwords_list)
 
-
+        self.stopwords_success_counter = 0
+        self.stopwords_start_time = time.clock()
         # [method #1]
+        #'''
         for idx in xrange(len(stopwords_list)):
             stopword = stopwords_list[idx]
             self.insert_stopword_2_db(database_name = database_name,\
                                       table_name = table_name,\
                                       stopword = stopword,\
                                       source = source)
-            # [method #2]
-            #map(lambda stopword: self.insert_stopword_2_db(database_name, table_name, stopword, source), stopwords_list)
-        '''
-        except:
-            print "Out of memory."
-            return
-        '''
+        #'''
+        # [method #2]
+        #map(lambda stopword: self.insert_stopword_2_db(database_name, table_name, stopword, source), stopwords_list)
+
+        self.stopwords_end_time = time.clock()
         print "insert task of stopwords finished."
+        print "elapsed time of stopwords insert task: %05f seconds." % (self.stopwords_end_time - self.stopwords_start_time)
+        print "all insert num.(contain failed records):", len(stopwords_list)
+        print "sucess insert num.:", self.stopwords_success_counter
+        print "insert success rate:%0.3f" % (self.stopwords_success_counter / float(len(stopwords_list)))
 
 
     def insert_stopword_2_db(self, database_name, table_name, stopword, source):
 #        self.con = MySQLdb.connect(host = "localhost", user = "root", passwd = "931209", db = table_name, charset = "utf8")
         cursor = self.con.cursor()
         try:
-            cursor.execute("""SELECT id FROM %s.%s WHERE word='%s'""" % (database_name, table_name, stopword))
+            cursor.execute("""SELECT id FROM %s.%s WHERE word="%s" """ % (database_name, table_name, stopword))
             word_exist = cursor.fetchone() > 0
             if word_exist:
-                cursor.execute("""UPDATE %s.%s SET type1='stopword', source='%s' WHERE word='%s'""" % (database_name, table_name, source, stopword))
+                sql = """UPDATE %s.%s
+                 SET type1='stopword',
+                  source='%s'
+                   WHERE word='%s'""" % (database_name, table_name, source, stopword)
+                cursor.execute(sql)
                 self.con.commit()
             else:
-                cursor.execute("""INSERT INTO %s.%s(word, pinyin, showtimes, weight, meaning, cixing, type1, type2, source) VALUES('%s', '', 0, 0.0, 'ex', 'cx', 'stopword', 'tx', '%s')""" % (database_name, table_name, stopword, source))
+                cursor.execute("""INSERT INTO %s.%s
+                (word, pinyin, showtimes, weight, meaning, cixing, type1, type2, source)
+                VALUES("%s", '', 0, 0.0, 'ex', 'cx', 'stopword', 'tx', '%s')""" % (database_name, table_name, stopword, source))
                 self.con.commit()
+            self.stopwords_success_counter += 1
         except MySQLdb.Error, e:
+            print '|'+stopword+'|'
             self.con.rollback()
             print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
 
 
 
 ################################### PART3 CLASS TEST ##################################
-# initial parameters
+# initial parameterswohe
 database_name = "wordsDB"
 table_name = "chinese_word_table"
 general_words_file_dir = "../data/sogou_cellbase-utf8.txt"
