@@ -79,22 +79,63 @@ class import_words_2_db(object):
             print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
 
 
-    def insert_modern_chinese_dictionary_2_db(self, file_name):
+    def insert_modern_chinese_dictionary_2_db(self, file_name, database_name, table_name):
+        self.insert_meaning_start_time = time.clock()
         print "start insert words from modern Chinese dictionary to databse at " + time.strftime('%Y-%m-%d %X', time.localtime())
-        try: f = open(file_name)
-        except: print "file %s doesn't exist." % file_name
+        print "file_name:", file_name
+        file_dir = os.path.join("../data/", file_name)
+        print "file_dir:", file_dir
+        try: f = open(file_dir)
+        except: print "file %s doesn't exist." % file_name; return
 
         try:
             print "use parallelize method."
             lines = f.readlines()
             word_list = sum(map(lambda line: re.compile('…(.*)＠').findall(line), lines), [])
             meaning_list = sum(map(lambda line: re.compile('＠(.*)').findall(line), lines), [])
+            print "len(word_list):", len(word_list)
+            print "word_list[0]:", word_list[0]
+            print "len(meaning_list):", len(meaning_list)
+            print "meaning_list[0]:", meaning_list[0]
         except:
-            print ""
+            print "out of memory, failed in using paralleize method."
+            f.close()
+            return
         finally:
             f.close()
 
+        self.success_insert_meaing_counter = 0
+        map(lambda word, meaning: self.find_word_and_insert_meaning_2_db(word, meaning, database_name, table_name), word_list, meaning_list)
+
+        self.insert_meaning_end_time = time.clock()
         print "finish insert words from modern Chinese dictionary to databse at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        print "elapsed time of words'meaning insert task: %05f seconds." % (self.insert_meaning_end_time - self.insert_mearning_start_time)
+        print "summation of words(or meanings):%d." % len(word_list)
+        print "success inserted words' meaning' num.:%d." % self.success_insert_meaing_counter
+        print "insert success rate:%f." % (self.success_insert_meaing_counter / float(len(word_list)))
+        print "Completed words'meaning insert task."
+
+        del word_list, meaning_list, f, file_dir
+        gc.collect()
+
+
+    def find_word_and_insert_meaning_2_db(self, word, meaning, database_name, table_name):
+        cursor = self.con.cursor()
+        try:
+            sql = """SELECT id FROM %s.%s WHERE word=%s""" % (database_name, table_name, word)
+            cursor.execute(sql)
+            # if exist current word in database, then the sentence below will execute.
+            # if not exist, then will skip to except part directly because of failed execution of this sentence below.
+            word_id = int(cursor.fetchone()[0])
+            sql = """UPDATE %s.%s set meaning="%s" WHERE id="%s" """ % (database_name, table_name, meaning, word_id)
+            cursor.execute(sql)
+            self.con.commit()
+            self.success_insert_meaing_counter += 1
+        except MySQLdb.Error, e:
+            print "Don't exist word %s in database." % word
+            print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+        return
+
 
     def insert_words_from_file_2_db(self, file_dir, database_name, table_name):
         print "start insert words from sogou word file to databse at " + time.strftime('%Y-%m-%d %X', time.localtime())
@@ -162,7 +203,7 @@ class import_words_2_db(object):
             print "Completed words insert task."
 
         # garbage collector
-        del sqls, f, lines, word_list, pinyin_list, source, counter, success_counter, word, pinyin, sql
+        del sqls, f, lines, word_list, pinyin_list, counter, success_counter, word, pinyin, sql
         gc.collect()
 
     def get_word_in_line(self, line):
@@ -228,8 +269,7 @@ class import_words_2_db(object):
         print "insert success rate:%0.3f" % (self.stopwords_success_counter / float(len(stopwords_list)))
 
         # garbage collector
-        del cur_directory_list, stopwords_file_list, stopwords_file_directory_list, source,
-        f_stopwords_list, stopwords_base_dir, stopwords_list
+        del cur_directory_list, stopwords_file_list, stopwords_file_directory_list, f_stopwords_list, stopwords_base_dir, stopwords_list
         gc.collect()
 
 
@@ -269,8 +309,10 @@ general_words_file_dir = "../data/sogou_cellbase-utf8.txt"
 stopwords_base_dir = "../data/"
 
 test = import_words_2_db()
-
+'''
 test.create_database(database_name = database_name)
 test.create_table(database_name= database_name, table_name = table_name)
 test.insert_words_from_file_2_db(file_dir = general_words_file_dir, database_name = database_name, table_name = table_name)
 test.insert_stopwords_from_file_2_db(file_dir = stopwords_base_dir, database_name = database_name, table_name = table_name)
+'''
+test.insert_modern_chinese_dictionary_2_db(file_name = 'modern_chinese_dictionary.txt', database_name = database_name, table_name = table_name)
