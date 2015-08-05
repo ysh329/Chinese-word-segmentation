@@ -24,6 +24,7 @@ class import_words_2_db(object):
     def __init__(self):
         print "start at:" + time.strftime('%Y-%m-%d %X', time.localtime())
         self.start = time.clock()
+        self.con = MySQLdb.connect(host = "localhost", user = "root", passwd = "931209", charset = "utf8")
 
     def __del__(self):
         self.con.close()
@@ -57,17 +58,20 @@ class import_words_2_db(object):
 
         sqls = ['USE %s' % database_name, 'SET NAMES UTF8']
         sqls.append("ALTER DATABASE %s DEFAULT CHARACTER SET 'utf8'" % database_name)
-        sqls.append("""CREATE TABLE IF NOT EXISTS %s(
+        sqls.append("""CREATE TABLE IF NOT EXISTS %s
+                                (
                                 id INT(11) AUTO_INCREMENT PRIMARY KEY,
-                                word TEXT NOT NULL,
-                                pinyin TEXT NOT NULL,
+                                word VARCHAR(100) NOT NULL,
+                                pinyin VARCHAR(100) NOT NULL,
                                 showtimes INT(11) NOT NULL DEFAULT 0,
                                 weight FLOAT(11) NOT NULL DEFAULT 0.0,
-                                meaning TEXT NOT NULL,
                                 cixing VARCHAR(10) NOT NULL,
                                 type1 VARCHAR(30) NOT NULL,
                                 type2 VARCHAR(30) NOT NULL,
-                                source TEXT NOT NULL)""" % table_name)
+                                source VARCHAR(50) NOT NULL,
+                                meaning TEXT NOT NULL,
+                                UNIQUE (word)
+                                )""" % table_name)
         sqls.append("CREATE INDEX id_idx ON %s(id)" % table_name)
         #print sqls
         try:
@@ -80,7 +84,6 @@ class import_words_2_db(object):
 
 
     def insert_modern_chinese_dictionary_2_db(self, file_name, database_name, table_name):
-        self.insert_meaning_start_time = time.clock()
         print "start insert words from modern Chinese dictionary to databse at " + time.strftime('%Y-%m-%d %X', time.localtime())
         print "file_name:", file_name
         file_dir = os.path.join("../data/", file_name)
@@ -91,8 +94,8 @@ class import_words_2_db(object):
         try:
             print "use parallelize method."
             lines = f.readlines()
-            word_list = sum(map(lambda line: re.compile('…(.*)＠').findall(line), lines), [])
-            meaning_list = sum(map(lambda line: re.compile('＠(.*)').findall(line), lines), [])
+            word_list = sum(map(lambda line: re.compile('…(.*)＠').findall(line.replace('"', '|').replace("'", "|").strip()), lines), [])
+            meaning_list = sum(map(lambda line: re.compile('＠(.*)').findall(line.replace('"', '|').replace("'", "|").strip()), lines), [])
             print "len(word_list):", len(word_list)
             print "word_list[0]:", word_list[0]
             print "len(meaning_list):", len(meaning_list)
@@ -104,35 +107,46 @@ class import_words_2_db(object):
         finally:
             f.close()
 
+        source = file_name
         self.success_insert_meaing_counter = 0
-        map(lambda word, meaning: self.find_word_and_insert_meaning_2_db(word, meaning, database_name, table_name), word_list, meaning_list)
+        self.success_insert_meaing_dont_exist_word_counter = 0
+        map(lambda word, meaning: self.find_word_and_insert_meaning_2_db(word = word, meaning = meaning, source = source, database_name = database_name, table_name = table_name), word_list, meaning_list)
 
-        self.insert_meaning_end_time = time.clock()
         print "finish insert words from modern Chinese dictionary to databse at " + time.strftime('%Y-%m-%d %X', time.localtime())
-        print "elapsed time of words'meaning insert task: %05f seconds." % (self.insert_meaning_end_time - self.insert_mearning_start_time)
         print "summation of words(or meanings):%d." % len(word_list)
-        print "success inserted words' meaning' num.:%d." % self.success_insert_meaing_counter
-        print "insert success rate:%f." % (self.success_insert_meaing_counter / float(len(word_list)))
+        print "success inserted words' meaning(exist words before) num.:%d." % self.success_insert_meaing_counter
+        print "success inserted words' meaning(Dont exist words before) num.:%d." % self.success_insert_meaing_dont_exist_word_counter
+        print "insert success rate(exist words before):%f." % (self.success_insert_meaing_counter / float(len(word_list)))
+        print "total insert success rate:%f." % ((self.success_insert_meaing_counter + self.success_insert_meaing_dont_exist_word_counter) / float(len(word_list)))
         print "Completed words'meaning insert task."
 
+        # garbage collector
         del word_list, meaning_list, f, file_dir
         gc.collect()
 
 
-    def find_word_and_insert_meaning_2_db(self, word, meaning, database_name, table_name):
+    def find_word_and_insert_meaning_2_db(self, word, meaning, source, database_name, table_name):
         cursor = self.con.cursor()
+        if self.success_insert_meaing_counter % 100 == 0: print "self.success_insert_meaing_counter:", self.success_insert_meaing_counter
+        if self.success_insert_meaing_dont_exist_word_counter % 10 == 0 and self.success_insert_meaing_dont_exist_word_counter != 0:
+            print "self.success_insert_meaing_dont_exist_word_counter:", self.success_insert_meaing_dont_exist_word_counter
         try:
-            sql = """SELECT id FROM %s.%s WHERE word=%s""" % (database_name, table_name, word)
-            cursor.execute(sql)
-            # if exist current word in database, then the sentence below will execute.
-            # if not exist, then will skip to except part directly because of failed execution of this sentence below.
-            word_id = int(cursor.fetchone()[0])
-            sql = """UPDATE %s.%s set meaning="%s" WHERE id="%s" """ % (database_name, table_name, meaning, word_id)
-            cursor.execute(sql)
+            cursor.execute("SELECT id FROM %s.%s WHERE word='%s'" % (database_name, table_name, word))
+            word_id = cursor.fetchone()
+            if word_id != None:
+                word_id = int(word_id[0])
+                cursor.execute("""UPDATE %s.%s set meaning="%s", source="%s" WHERE id=%s """ % (database_name, table_name, meaning, source, word_id))
+
+                self.success_insert_meaing_counter += 1
+            else: # word_id == None
+                sql = """INSERT INTO %s.%s
+                        (word, pinyin, showtimes, weight, meaning, cixing, type1, type2, source)
+                        VALUES('%s', '', 0, 0.0, '%s', 'cx', 't1', 't2', '%s')""" % (database_name, table_name, word, meaning, source)
+                cursor.execute(sql)
+                self.success_insert_meaing_dont_exist_word_counter += 1
             self.con.commit()
-            self.success_insert_meaing_counter += 1
         except MySQLdb.Error, e:
-            print "Don't exist word %s in database." % word
+            print "abnormal status in MySQL word %s." % word
             print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
         return
 
