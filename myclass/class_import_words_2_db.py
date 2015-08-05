@@ -15,6 +15,7 @@ __author__ = 'yuens'
 ################################### PART1 IMPORT ######################################
 import MySQLdb
 import sys
+import gc
 import os
 import re
 import time
@@ -78,9 +79,25 @@ class import_words_2_db(object):
             print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
 
 
+    def insert_modern_chinese_dictionary_2_db(self, file_name):
+        print "start insert words from modern Chinese dictionary to databse at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        try: f = open(file_name)
+        except: print "file %s doesn't exist." % file_name
+
+        try:
+            print "use parallelize method."
+            lines = f.readlines()
+            word_list = sum(map(lambda line: re.compile('…(.*)＠').findall(line), lines), [])
+            meaning_list = sum(map(lambda line: re.compile('＠(.*)').findall(line), lines), [])
+        except:
+            print ""
+        finally:
+            f.close()
+
+        print "finish insert words from modern Chinese dictionary to databse at " + time.strftime('%Y-%m-%d %X', time.localtime())
 
     def insert_words_from_file_2_db(self, file_dir, database_name, table_name):
-        print "start insert words from file to databse at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        print "start insert words from sogou word file to databse at " + time.strftime('%Y-%m-%d %X', time.localtime())
         self.words_start_time = time.clock()
 
         cursor = self.con.cursor()
@@ -144,7 +161,9 @@ class import_words_2_db(object):
             print "insert success rate:%f." % (success_counter / float(counter))
             print "Completed words insert task."
 
-
+        # garbage collector
+        del sqls, f, lines, word_list, pinyin_list, source, counter, success_counter, word, pinyin, sql
+        gc.collect()
 
     def get_word_in_line(self, line):
         word = re.compile(' (.*)').findall(line)[0].replace("'", '').strip()
@@ -208,6 +227,11 @@ class import_words_2_db(object):
         print "sucess insert num.:", self.stopwords_success_counter
         print "insert success rate:%0.3f" % (self.stopwords_success_counter / float(len(stopwords_list)))
 
+        # garbage collector
+        del cur_directory_list, stopwords_file_list, stopwords_file_directory_list, source,
+        f_stopwords_list, stopwords_base_dir, stopwords_list
+        gc.collect()
+
 
     def insert_stopword_2_db(self, database_name, table_name, stopword, source):
         cursor = self.con.cursor()
@@ -232,7 +256,6 @@ class import_words_2_db(object):
             self.stopwords_success_counter += 1
             print "self.stopwords_success_counter:", self.stopwords_success_counter
         except MySQLdb.Error, e:
-            print '|'+stopword+'|'
             self.con.rollback()
             print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
 
@@ -249,7 +272,5 @@ test = import_words_2_db()
 
 test.create_database(database_name = database_name)
 test.create_table(database_name= database_name, table_name = table_name)
-'''
 test.insert_words_from_file_2_db(file_dir = general_words_file_dir, database_name = database_name, table_name = table_name)
-'''
 test.insert_stopwords_from_file_2_db(file_dir = stopwords_base_dir, database_name = database_name, table_name = table_name)
