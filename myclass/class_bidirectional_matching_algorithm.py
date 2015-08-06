@@ -28,40 +28,47 @@ class ChineseWordSegmentation(object):
         print "elapsed time:%0.3f" % (self.end - self.start)
 
     def pre_process(self, raw_string, sign_list):
-
-        split_index_list = map(lambda sign: raw_string.find(sign), sign_list)
-        split_index_list = filter(lambda index: index > - 1, split_index_list)
-        split_index_list = sorted(split_index_list, reverse=True)
-
-        print "raw_string:", raw_string
-        print "raw_string.split('='):", raw_string.split("=")
-        print "split_index_list:", split_index_list
-
-        cur_raw_string = raw_string
-        sentence_list = []
-        for idx in xrange(len(split_index_list)):
-            split_index = split_index_list[idx]
-            if split_index+1 == len(cur_raw_string):
-                continue
-                #cur_raw_string = cur_raw_string[:split_index]
-            sentence_list.append(cur_raw_string[split_index+1:])
-        print sentence_list
-        sentence_list.append(cur_raw_string[:split_index])
-        # cur_raw_string namely is ""
+        print "start pre process at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        reversed_split_index_list = map(lambda sign: self.find_index(raw_string = raw_string, sign = sign), sign_list)
+        reversed_split_index_list = list( sorted(set(sum(reversed_split_index_list, [])), reverse=True) )
+        print "reversed_split_index_list:", reversed_split_index_list
+        sentence_list = self.split_raw_string_into_sentence_list(raw_string = raw_string, reversed_split_index_list = reversed_split_index_list)
         print "sentence_list:", sentence_list
+
+        print "end pre process at " + time.strftime('%Y-%m-%d %X', time.localtime())
 
     def find_index(self, raw_string, sign):
         cur_string = raw_string
         index_list = []
-        index = cur_string.rfind(sign)
-        while index:
+        for idx in xrange(raw_string.count(sign)):
+            index = cur_string.rfind(sign)
             index_list.append(index)
             cur_string = cur_string[:index]
-            index = cur_string.rfind(sign)
-            if cur_string == sign: index_list.append(index)
         return index_list
 
 
+    def split_raw_string_into_sentence_list(self, raw_string, reversed_split_index_list):
+        cur_string = raw_string
+        sentence_list = []
+        # split list is []
+        if reversed_split_index_list == []: sentence_list.append(cur_string)
+        for idx in xrange(len(reversed_split_index_list)):
+            split_index = reversed_split_index_list[idx]
+            # last element is sign
+            if split_index == len(cur_string) - 1:
+                cur_string = cur_string[:split_index]
+                continue
+            # first segment appendix to sentence_list
+            if reversed_split_index_list.index(split_index) == len(reversed_split_index_list) - 1 and len(cur_string) > 1:
+                sentence_list.append(cur_string[:split_index])
+            # normal split
+            sentence_list.append(cur_string[split_index+1:])
+            cur_string = cur_string[:split_index]
+        #print "cur_string:", cur_string
+        return sentence_list
+
+    def get_sentence_stopwords_list(self, database_name, table_name):
+        pass
 
 
     def remove_stopwords(self, sentence):
@@ -77,6 +84,7 @@ class ChineseWordSegmentation(object):
         pass
 ################################### PART3 CLASS TEST ##################################
 # initial parameters
+'''
 sign_list = ["。", "，", "！", "？", "?", "`", "~",\
 						 "!", "@", "#", "$", "%", "^", "&",\
 						 "*", "(", ")", "_", "+", "—", "=",\
@@ -86,12 +94,18 @@ sign_list = ["。", "，", "！", "？", "?", "`", "~",\
 						 ".", "\\", "/", "<", ">", "《", "》",\
 						 " ", "·", "    ", " ", "―", "［", "］"]
 '''
+sign_list = [".", "?", "!", "。", "，", "？", "！", "+"]
+
+
+
+'''
 raw_string = "123=45-67+"
-raw_string = "+++123+45+67+++"
+
 raw_string = "+"
 raw_string = "+++"
 '''
-
+raw_string = "1234567"
+print "raw_string:", raw_string
 test = ChineseWordSegmentation()
-#test.pre_process(raw_string = raw_string, sign_list = sign_list)
-print test.find_index(raw_string, "+")
+print test.pre_process(raw_string = raw_string, sign_list = sign_list)
+#print test.find_index(raw_string = raw_string, sign = "+")
