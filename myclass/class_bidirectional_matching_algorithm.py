@@ -41,12 +41,26 @@ class ChineseWordSegmentation(object):
         sentence_list = []
         for idx in xrange(len(split_index_list)):
             split_index = split_index_list[idx]
-            if split_index+1 != len(cur_raw_string) and idx+1 != len(split_index_list):
-                sentence_list.append(cur_raw_string[split_index+1:])
-            cur_raw_string = cur_raw_string[:split_index]
+            if split_index+1 == len(cur_raw_string):
+                continue
+                #cur_raw_string = cur_raw_string[:split_index]
+            sentence_list.append(cur_raw_string[split_index+1:])
+        print sentence_list
         sentence_list.append(cur_raw_string[:split_index])
         # cur_raw_string namely is ""
         print "sentence_list:", sentence_list
+
+    def find_index(self, raw_string, sign):
+        cur_string = raw_string
+        index_list = []
+        index = cur_string.rfind(sign)
+        while index:
+            index_list.append(index)
+            cur_string = cur_string[:index]
+            index = cur_string.rfind(sign)
+            if cur_string == sign: index_list.append(index)
+        return index_list
+
 
 
 
@@ -71,8 +85,13 @@ sign_list = ["。", "，", "！", "？", "?", "`", "~",\
 						 "“", ", ", "{", "}", "|", "、", "】", "【",\
 						 ".", "\\", "/", "<", ">", "《", "》",\
 						 " ", "·", "    ", " ", "―", "［", "］"]
-#raw_string = "123=45-67+"
-raw_string = "123=45-67"
+'''
+raw_string = "123=45-67+"
+raw_string = "+++123+45+67+++"
+raw_string = "+"
+raw_string = "+++"
+'''
 
 test = ChineseWordSegmentation()
-test.pre_process(raw_string = raw_string, sign_list = sign_list)
+#test.pre_process(raw_string = raw_string, sign_list = sign_list)
+print test.find_index(raw_string, "+")

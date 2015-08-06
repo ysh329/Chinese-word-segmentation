@@ -39,7 +39,7 @@ class update_in_db(object):
         pass
 
     def update_pinyin_field(self):
-        '''recognize_char_type'''
+        '''recognize chinese character or english word'''
         pass
 
     def update_source_field(self):
