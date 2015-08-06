@@ -86,6 +86,36 @@ class ChineseWordSegmentation(object):
 
 
 
+    def remove_string_stopwords(self, sentence, database_name, table_name):
+        pass
+
+
+
+    def get_essay_list(self, database_name, table_name):
+        """get title and content of essays from one table of database 'essayDB'."""
+        essay_list = []
+        cursor = self.con.cursor()
+        try:
+            sql = """SELECT id, title, content FROM %s.%s""" % (database_name, table_name)
+            cursor.execute(sql)
+            essay_tuple = cursor.fetchall()
+            print "len(essay_tuple):", len(essay_tuple)
+            print "type(essay_tuple):", type(essay_tuple)
+            print
+            print "essay_tuple[0]:", essay_tuple[0]
+            print "len(essay_tuple[0]):", len(essay_tuple[0])
+            print "type(essay_tuple[0]):", type(essay_tuple[0])
+            print
+            print "essay_tuple[0][0]:", essay_tuple[0][0]
+            print "essay_tuple[0][1]:", essay_tuple[0][1]
+            print "essay_tuple[0][2]:", essay_tuple[0][2]
+            print "type(essay_tuple[0][1]):", type(essay_tuple[0][1])
+        except MySQLdb.Error, e:
+            print "failed in selecting stopwords from table %s database %s." % (table_name, database_name)
+            print "MySQL Error %d: %s." % (e.args[0], e.args[1])
+
+
+
     def get_sentence_stopwords_list(self, database_name, table_name):
         stopword_list = [] # unicode stopword
         cursor = self.con.cursor()
@@ -103,12 +133,20 @@ class ChineseWordSegmentation(object):
             '''
             if len(stopword_tuple) > 0:
                 for idx in xrange(len(stopword_tuple)):
-                    try:stopword_list.append(unicode(stopword_tuple[idx][0], "utf8"))
-                    except: print "failed in transforming stopword %s to unicode form." % stopword_tuple[idx][0]; continue
+                    try:
+                        stopword = stopword_tuple[idx][0]
+                        if type(stopword) == unicode: stopword_list.append(stopword)
+                        else: stopword_list.append(unicode(stopword, "utf8"))
+                    except:
+                        print "failed in transforming stopword %s to unicode form." % stopword_tuple[idx][0]
+                        print "word %s %s" % (stopword, type(stopword))
+                        continue
+            print "get stopwords from database successfully."
         except MySQLdb.Error, e:
             print 'failed in selecting stopwords from database %s.' % database_name
             print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
         return stopword_list
+
 
 
     def get_string_or_list_unicode(self, string_or_list):
@@ -152,9 +190,6 @@ class ChineseWordSegmentation(object):
             string_or_list = ""
             return string_or_list
 
-    def remove_str_stopwords(self, sentence, database_name, table_name):
-        pass
-
 
 
     def maximum_matching(self, sentence):
@@ -182,27 +217,18 @@ sign_list = ["。", "，", "!", "！", "？", "?", "`", "~",\
 						 " ", "·", " ", "―", "［", "］"]
 '''
 
-
-
-
-'''
-raw_string = "123=45-67+"
-
-raw_string = "+"
-raw_string = "+++"
-'''
-
-
-database_name = "wordsDB"
-table_name = "chinese_word_table"
+word_database_name = "wordsDB"
+word_table_name = "chinese_word_table"
+essay_database_name = "essayDB"
+essay_table_name = "securities_newspaper_shzqb_table"
 sign_list = [".", "?", "!", "。", "，", "？", "！"]
 raw_string = "央行昨日逆回购500亿元。通过在公开市场展开逆回购来释放流动性，已成为近期央行操作常态。较低的中标利率，亦凸显央行引导资金利率运行中枢下行的意图。市场人士认为，控制和降低宏观及金融风险的有效举措之一，就是通过多种政策工具保证国内流动性充裕，将银行间市场利率维持在相对较低、平稳的水平。"
-#raw_string = unicode(raw_string, 'utf8')
-
 print "raw_string:", raw_string
-test = ChineseWordSegmentation(database_name = database_name)
+
+test = ChineseWordSegmentation(database_name = word_database_name)
 raw_string = test.get_string_or_list_unicode(raw_string)
 sign_list = test.get_string_or_list_unicode(sign_list)
 print test.pre_process(raw_string = raw_string, sign_list = sign_list)
-#print test.find_index(raw_string = raw_string, sign = "+")
-test.get_sentence_stopwords_list(database_name = database_name, table_name = table_name)
+
+test.get_sentence_stopwords_list(database_name = word_database_name, table_name = word_table_name)
+test.get_essay_list(database_name = essay_database_name, table_name = essay_table_name)
