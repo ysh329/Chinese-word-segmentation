@@ -18,6 +18,7 @@ import MySQLdb
 import sys
 import re
 import time
+import gc
 ################################### PART2 CLASS && FUNCTION ###########################
 class ChineseWordSegmentation(object):
     def __init__(self, database_name):
@@ -128,6 +129,7 @@ class ChineseWordSegmentation(object):
 
         print "Get essay list successfully."
         print "Get essay record %s." % (len(essay_list))
+        return essay_list
 
 
 
@@ -234,9 +236,37 @@ class ChineseWordSegmentation(object):
 
 
 
+    def remove_sentence_stopwords_process(self, sentence_list, stopword_list):
+        print "start remove sentence list stopwords process at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        remove_stopword_sentence_list = map(lambda sentence: self.remove_sentence_stopwords(sentence = sentence, stopword_list = stopword_list), sentence_list)
+        print "len(remove_stopword_sentence_list):", len(remove_stopword_sentence_list)
+
+        print "end remove sentence list stopwords process at " + time.strftime('%Y-%m-%d %X', time.localtime())
+
+
+
     def remove_sentence_stopwords(self, sentence, stopword_list):
         cur_sentence = sentence
+        for idx in xrange(len(stopword_list)):
+            #print idx
+            stopword = stopword_list[idx]
+            while cur_sentence.find(stopword) != -1:
+                print idx
+                cur_sentence = ''.join(cur_sentence.split(stopword))
+        remove_stopwords_sentence = cur_sentence
+        return remove_stopwords_sentence
 
+
+    def join_essays_title_and_content_into_list(self, essay_list):
+        essays_joined_title_content_list = map(lambda essay: essay[1] + essay[2], essay_list)
+        '''
+        essays_joined_title_content_list = []
+        for idx in xrange(len(essay_list)):
+            essay = essay_list[idx]
+            title_and_content = essay[1] + essay[2]
+            essays_joined_title_content_list.append(title_and_content)
+        '''
+        return essays_joined_title_content_list
 
 
 
@@ -272,4 +302,5 @@ stopword_list = test.get_sentence_stopword_list(database_name = word_database_na
 essay_list = test.get_essay_list(database_name = essay_database_name, table_name = essay_table_name)
 word_list = test.get_word_list(database_name = word_database_name, table_name = word_table_name)
 
-test.remove_sentence_stopwords(sentence = raw_string, stopword_list = stopword_list)
+essays_title_and_content_list = test.join_essays_title_and_content_into_list(essay_list = essay_list)
+removed_stopwords_essays_title_and_content_list = test.remove_sentence_stopwords_process(sentence_list = essays_title_and_content_list, stopword_list = stopword_list)

@@ -244,6 +244,7 @@ class import_words_2_db(object):
         f_stopwords_list = map(lambda file_dir: open(file_dir), stopwords_file_directory_list)
         stopwords_file_list = map(lambda f: f.readlines(), f_stopwords_list)
         stopwords_list = map(lambda stopword: stopword.strip(), set(sum(stopwords_file_list, [])))
+        stopwords_list = filter(lambda stopword: stopword != "", stopwords_list)
         print "len(stopwords_list):", len(stopwords_list)
 
         self.stopwords_success_counter = 0
