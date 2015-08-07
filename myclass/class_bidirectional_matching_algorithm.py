@@ -136,11 +136,38 @@ class ChineseWordSegmentation(object):
 
 
 
-    def get_sentence_stopwords_list(self, database_name, table_name):
-        stopword_list = [] # unicode stopword
+    def get_word_list(self, database_name, table_name):
+        word_list = []
+
         cursor = self.con.cursor()
         try:
-            sql = """SELECT word from %s.%s WHERE type1='stopword'""" % (database_name, table_name)
+            sql = """SELECT word FROM %s.%s WHERE type1='t1'""" % (database_name, table_name)
+            cursor.execute(sql)
+            word_tuple = cursor.fetchall()
+            if len(word_tuple) > 0:
+                for idx in xrange(len(word_tuple)):
+                    try:
+                        word = word_tuple[idx][0]
+                        if type(word) != unicode: word = unicode(word, "utf8")
+                        word_list.append(word)
+                    except:
+                        print "failed in transforming word %s to unicode form." % word
+                        print "word %s %s" % (word, type(word))
+                        continue
+            print "get words %s from database successfully." % len(word_list)
+        except MySQLdb.Error, e:
+            print 'failed in selecting words from database %s.' % database_name
+            print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+        return word_list
+
+
+
+    def get_sentence_stopword_list(self, database_name, table_name):
+        stopword_list = [] # unicode stopword
+
+        cursor = self.con.cursor()
+        try:
+            sql = """SELECT word FROM %s.%s WHERE type1='stopword'""" % (database_name, table_name)
             cursor.execute(sql)
             stopword_tuple = cursor.fetchall()
             '''
@@ -155,11 +182,11 @@ class ChineseWordSegmentation(object):
                 for idx in xrange(len(stopword_tuple)):
                     try:
                         stopword = stopword_tuple[idx][0]
-                        if type(stopword) == unicode: stopword_list.append(stopword)
-                        else: stopword_list.append(unicode(stopword, "utf8"))
+                        if type(stopword) != unicode: stopword = unicode(stopword, "utf8")
+                        stopword_list.append(stopword)
                     except:
                         print "failed in transforming stopword %s to unicode form." % stopword_tuple[idx][0]
-                        print "word %s %s" % (stopword, type(stopword))
+                        print "stopword %s %s" % (stopword, type(stopword))
                         continue
             print "get stopwords %s from database successfully." % len(stopword_list)
         except MySQLdb.Error, e:
@@ -240,5 +267,6 @@ sign_list = test.get_string_or_list_unicode(sign_list)
 print test.pre_process(raw_string = raw_string, sign_list = sign_list)
 
 # Get data of stopwords, words, essays from database.
-test.get_sentence_stopwords_list(database_name = word_database_name, table_name = word_table_name)
+test.get_sentence_stopword_list(database_name = word_database_name, table_name = word_table_name)
 test.get_essay_list(database_name = essay_database_name, table_name = essay_table_name)
+test.get_word_list(database_name = word_database_name, table_name = word_table_name)
