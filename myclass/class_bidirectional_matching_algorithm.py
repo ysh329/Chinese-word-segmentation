@@ -99,6 +99,7 @@ class ChineseWordSegmentation(object):
             sql = """SELECT id, title, content FROM %s.%s""" % (database_name, table_name)
             cursor.execute(sql)
             essay_tuple = cursor.fetchall()
+            """
             print "len(essay_tuple):", len(essay_tuple)
             print "type(essay_tuple):", type(essay_tuple)
             print
@@ -110,9 +111,28 @@ class ChineseWordSegmentation(object):
             print "essay_tuple[0][1]:", essay_tuple[0][1]
             print "essay_tuple[0][2]:", essay_tuple[0][2]
             print "type(essay_tuple[0][1]):", type(essay_tuple[0][1])
+            """
+            if len(essay_tuple) > 1:
+                for idx in xrange(len(essay_tuple)):
+                    id = int(essay_tuple[idx][0])
+                    title = essay_tuple[idx][1]
+                    content = essay_tuple[idx][2]
+                    try:
+                        if type(title) != unicode: title = unicode(title, "utf8")
+                        if type(content) != unicode: content = unicode(content, "utf8")
+                        essay_list.append([id, title, content])
+                    except:
+                        print "transform encoding to unicode failed."
+                        print "essay_tuple[0][0]:", essay_tuple[0][0]
+                        print "essay_tuple[0][1]:", essay_tuple[0][1]
+                        print "essay_tuple[0][2]:", essay_tuple[0][2]
+                        continue
         except MySQLdb.Error, e:
             print "failed in selecting stopwords from table %s database %s." % (table_name, database_name)
             print "MySQL Error %d: %s." % (e.args[0], e.args[1])
+
+        print "Get essay list successfully."
+        print "Get essay record %s." % (len(essay_list))
 
 
 
@@ -141,7 +161,7 @@ class ChineseWordSegmentation(object):
                         print "failed in transforming stopword %s to unicode form." % stopword_tuple[idx][0]
                         print "word %s %s" % (stopword, type(stopword))
                         continue
-            print "get stopwords from database successfully."
+            print "get stopwords %s from database successfully." % len(stopword_list)
         except MySQLdb.Error, e:
             print 'failed in selecting stopwords from database %s.' % database_name
             print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
@@ -206,17 +226,6 @@ class ChineseWordSegmentation(object):
         pass
 ################################### PART3 CLASS TEST ##################################
 # initial parameters
-'''
-sign_list = ["。", "，", "!", "！", "？", "?", "`", "~",\
-						 "!", "@", "#", "$", "%", "^", "&",\
-						 "*", "(", ")", "_", "+", "—", "=",\
-						 "＝", "-", "_", "）","（", "…", "￥",\
-						 "！", "；", ";", "：", ":", "‘", "”",\
-						 "“", ", ", "{", "}", "|", "、", "】", "【",\
-						 ".", "\\", "/", "<", ">", "《", "》",\
-						 " ", "·", " ", "―", "［", "］"]
-'''
-
 word_database_name = "wordsDB"
 word_table_name = "chinese_word_table"
 essay_database_name = "essayDB"
@@ -230,5 +239,6 @@ raw_string = test.get_string_or_list_unicode(raw_string)
 sign_list = test.get_string_or_list_unicode(sign_list)
 print test.pre_process(raw_string = raw_string, sign_list = sign_list)
 
+# Get data of stopwords, words, essays from database.
 test.get_sentence_stopwords_list(database_name = word_database_name, table_name = word_table_name)
 test.get_essay_list(database_name = essay_database_name, table_name = essay_table_name)
