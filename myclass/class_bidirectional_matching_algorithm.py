@@ -279,7 +279,6 @@ class ChineseWordSegmentation(object):
         mm_segmentation_reult_list = self.maximum_matching(sentence = sentence, word_list = word_list)
         rmm_segmentation_result_list = self.reverse_maximun_matching(sentence = sentence, word_list = word_list)
 
-        final_result = []
         if len(rmm_segmentation_result_list) <= len(mm_segmentation_reult_list):
             final_segmentation_result_list = rmm_segmentation_result_list
         else:
