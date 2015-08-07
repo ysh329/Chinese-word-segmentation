@@ -51,7 +51,7 @@ class ChineseWordSegmentation(object):
         #for sentence in sentence_list: print sentence
 
         print "end pre process at " + time.strftime('%Y-%m-%d %X', time.localtime())
-
+        return sentence_list
 
 
     def find_index(self, raw_string, sign):
@@ -345,13 +345,13 @@ print "len(essay_str_list):", len(essay_str_list)
 print "essay_str_list[0]:", essay_str_list[0]
 print "len(essay_str_list[0]):", len(essay_str_list[0])
 print "type(essay_str_list[0]):", type(essay_str_list[0])
-'''
+
 essay_str_sentence_list = map(lambda essay_str: test.split_raw_string_into_sentence_process(raw_string = essay_str, sign_list = sign_list), essay_str_list)
 print "len(essay_str_sentence_list)", len(essay_str_sentence_list)
 print "essay_str_sentence_list[0]:", essay_str_sentence_list[0]
 print "type(essay_str_sentence_list[0]):", type(essay_str_sentence_list[0])
 print "len(essay_str_sentence_list[0]):", len(essay_str_sentence_list[0])
-
+'''
 
 removed_stopwords_essay_str_sentence_list = test.remove_sentence_stopwords_process(sentence_list = essay_str_sentence_list, stopword_list = stopword_list)
 
