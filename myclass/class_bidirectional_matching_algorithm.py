@@ -41,7 +41,7 @@ class ChineseWordSegmentation(object):
 
 
 
-    def pre_process(self, raw_string, sign_list):
+    def split_raw_string_into_sentence_process(self, raw_string, sign_list):
         print "start pre process at " + time.strftime('%Y-%m-%d %X', time.localtime())
         reversed_split_index_list = map(lambda sign: self.find_index(raw_string = raw_string, sign = sign), sign_list)
         reversed_split_index_list = list( sorted(set(sum(reversed_split_index_list, [])), reverse=True) )
@@ -242,6 +242,7 @@ class ChineseWordSegmentation(object):
         print "len(remove_stopword_sentence_list):", len(remove_stopword_sentence_list)
 
         print "end remove sentence list stopwords process at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        return remove_stopword_sentence_list
 
 
 
@@ -250,9 +251,13 @@ class ChineseWordSegmentation(object):
         for idx in xrange(len(stopword_list)):
             #print idx
             stopword = stopword_list[idx]
-            while cur_sentence.find(stopword) != -1:
-                print idx
-                cur_sentence = ''.join(cur_sentence.split(stopword))
+            try:
+                while cur_sentence.find(stopword) != -1:
+                    print idx
+                    cur_sentence = ''.join(cur_sentence.split(stopword))
+            except:
+                print "[remove_sentence_stopwords]sentence is None."
+                continue
         remove_stopwords_sentence = cur_sentence
         return remove_stopwords_sentence
 
@@ -270,18 +275,46 @@ class ChineseWordSegmentation(object):
 
 
 
-    def maximum_matching(self, sentence):
-        pass
+    def bidirectional_maximum_matching(self, sentence, word_list):
+        mm_segmentation_reult_list = self.maximum_matching(sentence = sentence, word_list = word_list)
+        rmm_segmentation_result_list = self.reverse_maximun_matching(sentence = sentence, word_list = word_list)
+
+        final_result = []
+        if len(rmm_segmentation_result_list) <= len(mm_segmentation_reult_list):
+            final_segmentation_result_list = rmm_segmentation_result_list
+        else:
+            final_segmentation_result_list = mm_segmentation_reult_list
+        return final_segmentation_result_list
 
 
 
-    def reverse_maximun_matching(self, sentence):
-        pass
+    def maximum_matching(self, sentence, word_list):
+        segmentation_result_list = []
+        try:
+            while (len(sentence) > 0):
+                for i in range(len(word_list)):
+                    word = word_list[i]
+                    if sentence[:len(word)] == word:
+                        segmentation_result_list.append(word)
+                        sentence = sentence[len(word):]
+
+                    if i == len(word_list)-1:
+                        segmentation_result_list.append(sentence[:1])
+                        sentence = sentence[1:]
+        except:
+            print "mm process terminate, sentence:%s." % sentence
+        return segmentation_result_list
 
 
 
-    def bidirectional_maximum_matching(self, sentence):
-        pass
+    def reverse_maximun_matching(self, sentence, word_list):
+        reversed_sentence = sentence[::-1]
+        reversed_word_list = map(lambda word: word[::-1], word_list)
+        segmentation_result_list = self.maximum_matching(sentence = reversed_sentence, word_list = reversed_word_list)
+        return segmentation_result_list
+
+
+
 ################################### PART3 CLASS TEST ##################################
 # initial parameters
 word_database_name = "wordsDB"
@@ -289,18 +322,33 @@ word_table_name = "chinese_word_table"
 essay_database_name = "essayDB"
 essay_table_name = "securities_newspaper_shzqb_table"
 sign_list = [".", "?", "!", "。", "，", "？", "！"]
+'''
 raw_string = "央行昨日逆回购500亿元。通过在公开市场展开逆回购来释放流动性，已成为近期央行操作常态。较低的中标利率，亦凸显央行引导资金利率运行中枢下行的意图。市场人士认为，控制和降低宏观及金融风险的有效举措之一，就是通过多种政策工具保证国内流动性充裕，将银行间市场利率维持在相对较低、平稳的水平。"
+raw_string = test.get_string_or_list_unicode(raw_string)
 print "raw_string:", raw_string
+'''
+
 
 test = ChineseWordSegmentation(database_name = word_database_name)
-raw_string = test.get_string_or_list_unicode(raw_string)
 sign_list = test.get_string_or_list_unicode(sign_list)
-print test.pre_process(raw_string = raw_string, sign_list = sign_list)
+
 
 # Get data of stopwords, words, essays from database.
 stopword_list = test.get_sentence_stopword_list(database_name = word_database_name, table_name = word_table_name)
+# essay_list is a 2D list.
 essay_list = test.get_essay_list(database_name = essay_database_name, table_name = essay_table_name)
 word_list = test.get_word_list(database_name = word_database_name, table_name = word_table_name)
 
-essays_title_and_content_list = test.join_essays_title_and_content_into_list(essay_list = essay_list)
-removed_stopwords_essays_title_and_content_list = test.remove_sentence_stopwords_process(sentence_list = essays_title_and_content_list, stopword_list = stopword_list)
+
+# pre-process. split into sentences, remove stopwords.
+essay_str_list = test.join_essays_title_and_content_into_list(essay_list = essay_list)
+essay_str_sentence_list = map(lambda essay_str: test.split_raw_string_into_sentence_process(raw_string = essay_str, sign_list = sign_list), essay_str_list)
+removed_stopwords_essay_str_sentence_list = test.remove_sentence_stopwords_process(sentence_list = essay_str_sentence_list, stopword_list = stopword_list)
+
+
+# Make words segmentation.
+# essay_segmentation_result_list is a 2D list.
+essay_segmentation_result_list = map(lambda sentence:test.bidirectional_maximum_matching(sentence = sentence, word_list = word_list), removed_stopwords_essay_str_sentence_list)
+print "len(essay_segmentation_result_list):", len(essay_segmentation_result_list)
+print "len(essay_segmentation_result_list[0]):", len(essay_segmentation_result_list[0])
+print "essay_segmentation_result_list[0]:", essay_segmentation_result_list[0]
