@@ -351,12 +351,11 @@ print "len(essay_str_sentence_list)", len(essay_str_sentence_list)
 print "essay_str_sentence_list[0]:", essay_str_sentence_list[0]
 print "type(essay_str_sentence_list[0]):", type(essay_str_sentence_list[0])
 print "len(essay_str_sentence_list[0]):", len(essay_str_sentence_list[0])
-'''
 
-removed_stopwords_essay_str_sentence_list = test.remove_sentence_stopwords_process(sentence_list = essay_str_sentence_list, stopword_list = stopword_list)
+removed_stopwords_essay_str_sentence_list = map(lambda essay_str_sentence_lis: test.remove_sentence_stopwords_process(sentence_list = essay_str_sentence_lis, stopword_list = stopword_list), essay_str_sentence_list)
 
 print "removed_stopwords_essay_str_sentence_list[0]:", removed_stopwords_essay_str_sentence_list[0]
-
+'''
 
 
 # Make words segmentation.
