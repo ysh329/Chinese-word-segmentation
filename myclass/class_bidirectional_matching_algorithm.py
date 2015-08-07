@@ -341,8 +341,22 @@ word_list = test.get_word_list(database_name = word_database_name, table_name = 
 
 # pre-process. split into sentences, remove stopwords.
 essay_str_list = test.join_essays_title_and_content_into_list(essay_list = essay_list)
+print "len(essay_str_list):", len(essay_str_list)
+print "essay_str_list[0]:", essay_str_list[0]
+print "len(essay_str_list[0]):", len(essay_str_list[0])
+print "type(essay_str_list[0]):", type(essay_str_list[0])
+'''
 essay_str_sentence_list = map(lambda essay_str: test.split_raw_string_into_sentence_process(raw_string = essay_str, sign_list = sign_list), essay_str_list)
+print "len(essay_str_sentence_list)", len(essay_str_sentence_list)
+print "essay_str_sentence_list[0]:", essay_str_sentence_list[0]
+print "type(essay_str_sentence_list[0]):", type(essay_str_sentence_list[0])
+print "len(essay_str_sentence_list[0]):", len(essay_str_sentence_list[0])
+
+
 removed_stopwords_essay_str_sentence_list = test.remove_sentence_stopwords_process(sentence_list = essay_str_sentence_list, stopword_list = stopword_list)
+
+print "removed_stopwords_essay_str_sentence_list[0]:", removed_stopwords_essay_str_sentence_list[0]
+
 
 
 # Make words segmentation.
@@ -351,3 +365,4 @@ essay_segmentation_result_list = map(lambda sentence:test.bidirectional_maximum_
 print "len(essay_segmentation_result_list):", len(essay_segmentation_result_list)
 print "len(essay_segmentation_result_list[0]):", len(essay_segmentation_result_list[0])
 print "essay_segmentation_result_list[0]:", essay_segmentation_result_list[0]
+'''
