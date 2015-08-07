@@ -86,11 +86,6 @@ class ChineseWordSegmentation(object):
 
 
 
-    def remove_string_stopwords(self, sentence, database_name, table_name):
-        pass
-
-
-
     def get_essay_list(self, database_name, table_name):
         """get title and content of essays from one table of database 'essayDB'."""
         essay_list = []
@@ -239,6 +234,12 @@ class ChineseWordSegmentation(object):
 
 
 
+    def remove_sentence_stopwords(self, sentence, stopword_list):
+        cur_sentence = sentence
+
+
+
+
     def maximum_matching(self, sentence):
         pass
 
@@ -267,6 +268,8 @@ sign_list = test.get_string_or_list_unicode(sign_list)
 print test.pre_process(raw_string = raw_string, sign_list = sign_list)
 
 # Get data of stopwords, words, essays from database.
-test.get_sentence_stopword_list(database_name = word_database_name, table_name = word_table_name)
-test.get_essay_list(database_name = essay_database_name, table_name = essay_table_name)
-test.get_word_list(database_name = word_database_name, table_name = word_table_name)
+stopword_list = test.get_sentence_stopword_list(database_name = word_database_name, table_name = word_table_name)
+essay_list = test.get_essay_list(database_name = essay_database_name, table_name = essay_table_name)
+word_list = test.get_word_list(database_name = word_database_name, table_name = word_table_name)
+
+test.remove_sentence_stopwords(sentence = raw_string, stopword_list = stopword_list)
