@@ -42,7 +42,7 @@ class ChineseWordSegmentation(object):
 
 
     def split_raw_string_into_sentence_process(self, raw_string, sign_list):
-        print "start pre process at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        #print "start pre process at " + time.strftime('%Y-%m-%d %X', time.localtime())
         reversed_split_index_list = map(lambda sign: self.find_index(raw_string = raw_string, sign = sign), sign_list)
         reversed_split_index_list = list( sorted(set(sum(reversed_split_index_list, [])), reverse=True) )
         #print "reversed_split_index_list:", reversed_split_index_list
@@ -50,7 +50,7 @@ class ChineseWordSegmentation(object):
         sentence_list = self.split_raw_string_into_sentence_list(raw_string = raw_string, reversed_split_index_list = reversed_split_index_list)
         #for sentence in sentence_list: print sentence
 
-        print "end pre process at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        #print "end pre process at " + time.strftime('%Y-%m-%d %X', time.localtime())
         return sentence_list
 
 
@@ -138,7 +138,8 @@ class ChineseWordSegmentation(object):
 
         cursor = self.con.cursor()
         try:
-            sql = """SELECT word FROM %s.%s WHERE type1='t1'""" % (database_name, table_name)
+            #sql = """SELECT word FROM %s.%s WHERE type1='t1'""" % (database_name, table_name)
+            sql = """SELECT word FROM %s.%s""" % (database_name, table_name)
             cursor.execute(sql)
             word_tuple = cursor.fetchall()
             if len(word_tuple) > 0:
@@ -253,7 +254,7 @@ class ChineseWordSegmentation(object):
             stopword = stopword_list[idx]
             try:
                 while cur_sentence.find(stopword) != -1:
-                    print idx
+                    #print idx
                     cur_sentence = ''.join(cur_sentence.split(stopword))
             except:
                 print "[remove_sentence_stopwords]sentence is None."
@@ -275,12 +276,22 @@ class ChineseWordSegmentation(object):
 
 
 
+    def remove_blank_str_in_list(self, raw_list):
+        return filter(lambda string: string != "", raw_list)
+
+
+
+    def chinsese_segmentation_for_str_list(self, string_list, word_list):
+        return map(lambda string: self.maximum_matching(sentence = string, word_list = word_list), string_list)
+
+
+
     def bidirectional_maximum_matching(self, sentence, word_list):
         mm_segmentation_reult_list = self.maximum_matching(sentence = sentence, word_list = word_list)
         rmm_segmentation_result_list = self.reverse_maximun_matching(sentence = sentence, word_list = word_list)
 
         if len(rmm_segmentation_result_list) <= len(mm_segmentation_reult_list):
-            final_segmentation_result_list = rmm_segmentation_result_list
+            final_segmentation_result_list = map(lambda word: word[::-1], rmm_segmentation_result_list)
         else:
             final_segmentation_result_list = mm_segmentation_reult_list
         return final_segmentation_result_list
@@ -291,13 +302,13 @@ class ChineseWordSegmentation(object):
         segmentation_result_list = []
         try:
             while (len(sentence) > 0):
-                for i in range(len(word_list)):
-                    word = word_list[i]
+                for idx in range(len(word_list)):
+                    word = word_list[idx]
                     if sentence[:len(word)] == word:
                         segmentation_result_list.append(word)
                         sentence = sentence[len(word):]
 
-                    if i == len(word_list)-1:
+                    if idx == len(word_list)-1:
                         segmentation_result_list.append(sentence[:1])
                         sentence = sentence[1:]
         except:
@@ -337,27 +348,44 @@ stopword_list = test.get_sentence_stopword_list(database_name = word_database_na
 # essay_list is a 2D list.
 essay_list = test.get_essay_list(database_name = essay_database_name, table_name = essay_table_name)
 word_list = test.get_word_list(database_name = word_database_name, table_name = word_table_name)
+word_list = sorted(word_list, reverse = True)
 
 
-# pre-process. split into sentences, remove stopwords.
+# pre-process.join essay's title and content into one string, split into sentences, remove stopwords.
+# 1.join essay's title and content into one string,
 essay_str_list = test.join_essays_title_and_content_into_list(essay_list = essay_list)
 print "len(essay_str_list):", len(essay_str_list)
 print "essay_str_list[0]:", essay_str_list[0]
 print "len(essay_str_list[0]):", len(essay_str_list[0])
 print "type(essay_str_list[0]):", type(essay_str_list[0])
-
+# 2.split each essay string(title and content) into sentences.
+# therefore, essay_str_sentence_list is a 2-D list variable.
 essay_str_sentence_list = map(lambda essay_str: test.split_raw_string_into_sentence_process(raw_string = essay_str, sign_list = sign_list), essay_str_list)
 print "len(essay_str_sentence_list)", len(essay_str_sentence_list)
 print "essay_str_sentence_list[0]:", essay_str_sentence_list[0]
 print "type(essay_str_sentence_list[0]):", type(essay_str_sentence_list[0])
 print "len(essay_str_sentence_list[0]):", len(essay_str_sentence_list[0])
-
+# 3.remove stopwords from  2-D list variable essay_str_sentence_list
+# therefore, removed_stopwords_essay_str_sentence_list is a 2-D list variable, too.
 removed_stopwords_essay_str_sentence_list = map(lambda essay_str_sentence_lis: test.remove_sentence_stopwords_process(sentence_list = essay_str_sentence_lis, stopword_list = stopword_list), essay_str_sentence_list)
-
 print "removed_stopwords_essay_str_sentence_list[0]:", removed_stopwords_essay_str_sentence_list[0]
+# 4.filter the blank string such as "".
+# removed_blank_essay_str_sentence_list is a 2-D list variable.
+removed_blank_essay_str_sentence_list = map(lambda essay_str_sentence_list: test.remove_blank_str_in_list(raw_list = essay_str_sentence_list), removed_stopwords_essay_str_sentence_list)
+print "len(removed_blank_essay_str_sentence_list):", len(removed_blank_essay_str_sentence_list)
+print "removed_blank_essay_str_sentence_list[0]:", removed_blank_essay_str_sentence_list[0]
+print "type(removed_blank_essay_str_sentence_list[0]):", type(removed_blank_essay_str_sentence_list[0])
+print "len(removed_blank_essay_str_sentence_list[0]):", len(removed_blank_essay_str_sentence_list[0])
+
+
+
+raw_string = "IBM“Spark 部署及示例代码讲解”，本文介绍了如何下载、部署 Spark 及示例代码的运行。此外，深入介绍了运行代码的过程、脚本内容，通过这些介绍力求让读者可以快速地上手 Spark。"
+raw_string = unicode(raw_string, "utf-8")
+mm_split_result = test.maximum_matching(sentence = raw_string, word_list = word_list)
+print "mm_split_result:", "|".join(mm_split_result)
+rmm_split_result = test.reverse_maximun_matching(sentence = raw_string, word_list = word_list)
+print "rmm_split_result:", "|".join(rmm_split_result)
 '''
-
-
 # Make words segmentation.
 # essay_segmentation_result_list is a 2D list.
 essay_segmentation_result_list = map(lambda sentence:test.bidirectional_maximum_matching(sentence = sentence, word_list = word_list), removed_stopwords_essay_str_sentence_list)
