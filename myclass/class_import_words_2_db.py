@@ -83,6 +83,13 @@ class import_words_2_db(object):
             print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
 
 
+    def word_filter_at(self, word):
+        exist_at = word.find('＠')
+        if exist_at > -1:
+            word = word.split('＠')[0]
+        return word
+
+
     def insert_modern_chinese_dictionary_2_db(self, file_name, database_name, table_name):
         print "start insert words from modern Chinese dictionary to databse at " + time.strftime('%Y-%m-%d %X', time.localtime())
         print "file_name:", file_name
@@ -95,6 +102,7 @@ class import_words_2_db(object):
             print "use parallelize method."
             lines = f.readlines()
             word_list = sum(map(lambda line: re.compile('…(.*)＠').findall(line.replace('"', '|').replace("'", "|").strip()), lines), [])
+            word_list = map(lambda word: self.word_filter_at(word), word_list)
             meaning_list = sum(map(lambda line: re.compile('＠(.*)').findall(line.replace('"', '|').replace("'", "|").strip()), lines), [])
             print "len(word_list):", len(word_list)
             print "word_list[0]:", word_list[0]

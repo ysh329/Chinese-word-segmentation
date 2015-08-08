@@ -138,8 +138,8 @@ class ChineseWordSegmentation(object):
 
         cursor = self.con.cursor()
         try:
-            #sql = """SELECT word FROM %s.%s WHERE type1='t1'""" % (database_name, table_name)
-            sql = """SELECT word FROM %s.%s""" % (database_name, table_name)
+            sql = """SELECT word FROM %s.%s WHERE type1='t1'""" % (database_name, table_name)
+            #sql = """SELECT word FROM %s.%s""" % (database_name, table_name)
             cursor.execute(sql)
             word_tuple = cursor.fetchall()
             if len(word_tuple) > 0:
@@ -282,16 +282,21 @@ class ChineseWordSegmentation(object):
 
 
     def chinsese_segmentation_for_str_list(self, string_list, word_list):
+
         return map(lambda string: self.maximum_matching(sentence = string, word_list = word_list), string_list)
 
 
 
     def bidirectional_maximum_matching(self, sentence, word_list):
+
         mm_segmentation_reult_list = self.maximum_matching(sentence = sentence, word_list = word_list)
         rmm_segmentation_result_list = self.reverse_maximun_matching(sentence = sentence, word_list = word_list)
 
+        print "MM:", len(mm_segmentation_reult_list)
+        print "RMM:", len(rmm_segmentation_result_list)
+        print
         if len(rmm_segmentation_result_list) <= len(mm_segmentation_reult_list):
-            final_segmentation_result_list = map(lambda word: word[::-1], rmm_segmentation_result_list)
+            final_segmentation_result_list = rmm_segmentation_result_list
         else:
             final_segmentation_result_list = mm_segmentation_reult_list
         return final_segmentation_result_list
@@ -321,9 +326,26 @@ class ChineseWordSegmentation(object):
         reversed_sentence = sentence[::-1]
         reversed_word_list = map(lambda word: word[::-1], word_list)
         segmentation_result_list = self.maximum_matching(sentence = reversed_sentence, word_list = reversed_word_list)
+        segmentation_result_list = map(lambda word: word[::-1], segmentation_result_list[::-1])
         return segmentation_result_list
 
 
+
+    def word_frequency_statistic(self, essay_word_2d_list):
+        """essay_word_list is a 2-D list"""
+        essay_word_list = sum(sum(essay_word_2d_list, []), [])
+        essay_word_set = set(essay_word_list)
+        essay_word_dict = {}
+        for word in essay_word_set:
+            essay_word_dict[word] = 0
+
+        for idx in xrange(len(essay_word_list)):
+            word = essay_word_list[idx]
+            essay_word_dict[word] += 1
+
+        for key, value in essay_word_dict:
+            print key, value
+        return essay_word_dict
 
 ################################### PART3 CLASS TEST ##################################
 # initial parameters
@@ -348,7 +370,9 @@ stopword_list = test.get_sentence_stopword_list(database_name = word_database_na
 # essay_list is a 2D list.
 essay_list = test.get_essay_list(database_name = essay_database_name, table_name = essay_table_name)
 word_list = test.get_word_list(database_name = word_database_name, table_name = word_table_name)
-word_list = sorted(word_list, reverse = True)
+word_list.sort(key=len, reverse = True)
+#print "len(word_list)", len(word_list)
+#for i in word_list[101:201]: print i
 
 
 # pre-process.join essay's title and content into one string, split into sentences, remove stopwords.
@@ -379,17 +403,25 @@ print "len(removed_blank_essay_str_sentence_list[0]):", len(removed_blank_essay_
 
 
 
+
+
 raw_string = "IBM“Spark 部署及示例代码讲解”，本文介绍了如何下载、部署 Spark 及示例代码的运行。此外，深入介绍了运行代码的过程、脚本内容，通过这些介绍力求让读者可以快速地上手 Spark。"
 raw_string = unicode(raw_string, "utf-8")
 mm_split_result = test.maximum_matching(sentence = raw_string, word_list = word_list)
 print "mm_split_result:", "|".join(mm_split_result)
 rmm_split_result = test.reverse_maximun_matching(sentence = raw_string, word_list = word_list)
 print "rmm_split_result:", "|".join(rmm_split_result)
-'''
+
+
+
+
 # Make words segmentation.
 # essay_segmentation_result_list is a 2D list.
+print "start making words segmentation at " + time.strftime('%Y-%m-%d %X', time.localtime()) + "."
 essay_segmentation_result_list = map(lambda sentence:test.bidirectional_maximum_matching(sentence = sentence, word_list = word_list), removed_stopwords_essay_str_sentence_list)
 print "len(essay_segmentation_result_list):", len(essay_segmentation_result_list)
 print "len(essay_segmentation_result_list[0]):", len(essay_segmentation_result_list[0])
 print "essay_segmentation_result_list[0]:", essay_segmentation_result_list[0]
-'''
+print "end making words segmentation at " + time.strftime('%Y-%m-%d %X', time.localtime()) + "."
+
+test.word_frequency_statistic(essay_word_2d_list = essay_segmentation_result_list)
