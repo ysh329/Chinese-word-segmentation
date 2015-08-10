@@ -13,6 +13,9 @@
 #        STEP4. (CLASS class_segmentation_result_analyser.py)
 #               Analise the result of Chinese word segmentation step, such as word frequency
 #               statistic, result visualization, etc.
+#        STEP5. (CLASS class_update_in_db.py)
+#               According to word frequency statistic result of essays, insert the statistic result in our essays
+#               (or we can also call them corpus) to field 'showtimes' of data table 'chinese_word_table'.
 
 # Author: Shuai Yuan
 # E-mail: ysh329@sina.com
@@ -50,7 +53,6 @@ def main():
     #        Update or increase table's some fields, such as 'pinyin', 'meaning' fields, etc.
     # initial parameters
     word_database_name = "wordsDB"
-
     Updator = update_in_db(database_name = word_database_name)
 
 
@@ -85,12 +87,23 @@ def main():
     #        Analise the result of Chinese word segmentation step, such as word frequency
     #        statistic, result visualization, etc.
     Analyser = segmentation_result_analyser()
+    top_n = 4
+
     essay_word_dict = Analyser.word_frequency_statistic(essay_word_2d_list = essay_segmentation_result_list)
     sorted_essay_word_tuple = Analyser.sort_dict(word_dict = essay_word_dict)
     print 'sorted_essay_word_tuple:', sorted_essay_word_tuple
-    top_n_words_tuple = Analyser.get_top_n_words(sorted_word_tuple = sorted_word_tuple, n = 3)
-    print 'top_n_words_tuple:', top_n_words_tuple
+    top_n_words_tuple_list = Analyser.get_top_n_words(sorted_word_tuple = sorted_word_tuple, n = top_n)
+    print 'top_n_words_tuple:', top_n_words_tuple_list
+    Analyser.show_top_n_words_dataframe(top_n_words_tuple_list = top_n_words_tuple_list)
+    Analyser.show_top_n_words_plot(top_n_words_tuple_list = top_n_words_tuple_list, n = top_n)
 
+
+    # STEP5. (CLASS class_update_in_db.py)
+    #        According to word frequency statistic result of essays, insert the statistic result in our essays
+    #        (or we can also call them corpus) to field 'showtimes' of data table 'chinese_word_table'.
+    database_name = "wordsDB"
+    word_table_name = "chinese_word_table"
+    Updator.update_showtimes_field(word_dict = essay_word_dict, database_name = word_database_name, table_name = word_table_name)
 ################################ PART4 EXECUTE ##################################
 if __name__ == "__main__":
     main()
