@@ -325,17 +325,19 @@ class import_words_2_db(object):
 
 
 ################################### PART3 CLASS TEST ##################################
-# initial parameterswohe
+'''
+# ininitial parameterswohe
 database_name = "wordsDB"
 table_name = "chinese_word_table"
 general_words_file_dir = "../data/sogou_cellbase-utf8.txt"
 stopwords_base_dir = "../data/"
 
 test = import_words_2_db()
-'''
-test.create_database(database_name = database_name)
-test.create_table(database_name= database_name, table_name = table_name)
-test.insert_words_from_file_2_db(file_dir = general_words_file_dir, database_name = database_name, table_name = table_name)
-test.insert_stopwords_from_file_2_db(file_dir = stopwords_base_dir, database_name = database_name, table_name = table_name)
-'''
+
+#test.create_database(database_name = database_name)
+#test.create_table(database_name= database_name, table_name = table_name)
+#test.insert_words_from_file_2_db(file_dir = general_words_file_dir, database_name = database_name, table_name = table_name)
+#test.insert_stopwords_from_file_2_db(file_dir = stopwords_base_dir, database_name = database_name, table_name = table_name)
+
 test.insert_modern_chinese_dictionary_2_db(file_name = 'modern_chinese_dictionary.txt', database_name = database_name, table_name = table_name)
+'''

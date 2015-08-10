@@ -20,7 +20,7 @@ import re
 import time
 import gc
 ################################### PART2 CLASS && FUNCTION ###########################
-class ChineseWordSegmentation(object):
+class bidirectional_matching_algorithm(object):
     def __init__(self, database_name):
         print "start at:" + time.strftime('%Y-%m-%d %X', time.localtime())
         self.start = time.clock()
@@ -282,7 +282,6 @@ class ChineseWordSegmentation(object):
 
 
     def chinsese_segmentation_for_str_list(self, string_list, word_list):
-
         return map(lambda string: self.maximum_matching(sentence = string, word_list = word_list), string_list)
 
 
@@ -333,35 +332,27 @@ class ChineseWordSegmentation(object):
 
     def word_frequency_statistic(self, essay_word_2d_list):
         """essay_word_list is a 2-D list"""
-        essay_word_list = sum(sum(essay_word_2d_list, []), [])
-        essay_word_set = set(essay_word_list)
-        essay_word_dict = {}
-        for word in essay_word_set:
-            essay_word_dict[word] = 0
+        essay_word_2d_list = sum(sum(essay_word_2d_list, []), [])
+        essay_word_set = set(essay_word_2d_list)
+        word_list = map(lambda word: word, essay_word_set)
 
-        for idx in xrange(len(essay_word_list)):
-            word = essay_word_list[idx]
-            essay_word_dict[word] += 1
+        word_dict = {}
+        for word in word_list: word_dict[word] = 0
+        for word in essay_word_2d_list:
+            word_dict[word] += 1
 
-        return essay_word_dict
-
+        return word_dict
 ################################### PART3 CLASS TEST ##################################
+'''
 # initial parameters
 word_database_name = "wordsDB"
 word_table_name = "chinese_word_table"
 essay_database_name = "essayDB"
 essay_table_name = "securities_newspaper_shzqb_table"
 sign_list = [".", "?", "!", "。", "，", "？", "！"]
-'''
-raw_string = "央行昨日逆回购500亿元。通过在公开市场展开逆回购来释放流动性，已成为近期央行操作常态。较低的中标利率，亦凸显央行引导资金利率运行中枢下行的意图。市场人士认为，控制和降低宏观及金融风险的有效举措之一，就是通过多种政策工具保证国内流动性充裕，将银行间市场利率维持在相对较低、平稳的水平。"
-raw_string = test.get_string_or_list_unicode(raw_string)
-print "raw_string:", raw_string
-'''
 
-
-test = ChineseWordSegmentation(database_name = word_database_name)
+test = bidirectional_matching_algorithm(database_name = word_database_name)
 sign_list = test.get_string_or_list_unicode(sign_list)
-
 
 # Get data of stopwords, words, essays from database.
 stopword_list = test.get_sentence_stopword_list(database_name = word_database_name, table_name = word_table_name)
@@ -371,7 +362,6 @@ word_list = test.get_word_list(database_name = word_database_name, table_name = 
 word_list.sort(key=len, reverse = True)
 #print "len(word_list)", len(word_list)
 #for i in word_list[101:201]: print i
-
 
 # pre-process.join essay's title and content into one string, split into sentences, remove stopwords.
 # 1.join essay's title and content into one string,
@@ -399,10 +389,27 @@ print "removed_blank_essay_str_sentence_list[0]:", removed_blank_essay_str_sente
 print "type(removed_blank_essay_str_sentence_list[0]):", type(removed_blank_essay_str_sentence_list[0])
 print "len(removed_blank_essay_str_sentence_list[0]):", len(removed_blank_essay_str_sentence_list[0])
 
+# Make words segmentation.
+# essay_segmentation_result_list is a 2D list.
+print "start making words segmentation at " + time.strftime('%Y-%m-%d %X', time.localtime()) + "."
+essay_segmentation_result_list = map(lambda sentence: test.chinsese_segmentation_for_str_list(string_list = sentence, word_list = word_list), removed_stopwords_essay_str_sentence_list)
+print "len(essay_segmentation_result_list):", len(essay_segmentation_result_list)
+print "len(essay_segmentation_result_list[0]):", len(essay_segmentation_result_list[0])
+print "essay_segmentation_result_list[0]:", essay_segmentation_result_list[0]
+print "end making words segmentation at " + time.strftime('%Y-%m-%d %X', time.localtime()) + "."
+
+# news record 3
+essay_word_dict = test.word_frequency_statistic(essay_word_2d_list = essay_segmentation_result_list)
+print essay_word_dict
+for word in essay_word_dict: print word, essay_word_dict[word]
+'''
 
 
 
 
+
+
+'''
 raw_string = "IBM“Spark 部署及示例代码讲解”，本文介绍了如何下载、部署 Spark 及示例代码的运行。此外，深入介绍了运行代码的过程、脚本内容，通过这些介绍力求让读者可以快速地上手 Spark。"
 raw_string = unicode(raw_string, "utf-8")
 mm_split_result = test.maximum_matching(sentence = raw_string, word_list = word_list)
@@ -411,23 +418,4 @@ rmm_split_result = test.reverse_maximun_matching(sentence = raw_string, word_lis
 print "rmm_split_result:", "|".join(rmm_split_result)
 final_split_result = test.bidirectional_maximum_matching(sentence = raw_string, word_list = word_list)
 print "final_split_result:", "|".join(final_split_result)
-
-
-
-# Make words segmentation.
-# essay_segmentation_result_list is a 2D list.
-print "start making words segmentation at " + time.strftime('%Y-%m-%d %X', time.localtime()) + "."
-essay_segmentation_result_list = map(lambda sentence:test.bidirectional_maximum_matching(sentence = sentence, word_list = word_list), removed_stopwords_essay_str_sentence_list)
-print "len(essay_segmentation_result_list):", len(essay_segmentation_result_list)
-print "len(essay_segmentation_result_list[0]):", len(essay_segmentation_result_list[0])
-print "essay_segmentation_result_list[0]:", essay_segmentation_result_list[0]
-print "end making words segmentation at " + time.strftime('%Y-%m-%d %X', time.localtime()) + "."
-
-
-
-# news record 3
-essay_word_dict = test.word_frequency_statistic(essay_word_2d_list = essay_segmentation_result_list)
-for key, value in essay_word_dict.items():
-    print key, value
-print "len(essay_word_dict):", len(essay_word_dict)
-print essay_word_dict
+'''

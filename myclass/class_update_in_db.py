@@ -52,5 +52,7 @@ class update_in_db(object):
         pass
 
 ################################### PART3 CLASS TEST ##################################
+'''
 database_name = "wordsDB"
 test = update_in_db(database_name = database_name)
+'''
