@@ -92,7 +92,7 @@ class ChineseWordSegmentation(object):
         essay_list = []
         cursor = self.con.cursor()
         try:
-            sql = """SELECT id, title, content FROM %s.%s""" % (database_name, table_name)
+            sql = """SELECT id, title, content FROM %s.%s WHERE id<5""" % (database_name, table_name)
             cursor.execute(sql)
             essay_tuple = cursor.fetchall()
             """
@@ -343,8 +343,6 @@ class ChineseWordSegmentation(object):
             word = essay_word_list[idx]
             essay_word_dict[word] += 1
 
-        for key, value in essay_word_dict:
-            print key, value
         return essay_word_dict
 
 ################################### PART3 CLASS TEST ##################################
@@ -411,7 +409,8 @@ mm_split_result = test.maximum_matching(sentence = raw_string, word_list = word_
 print "mm_split_result:", "|".join(mm_split_result)
 rmm_split_result = test.reverse_maximun_matching(sentence = raw_string, word_list = word_list)
 print "rmm_split_result:", "|".join(rmm_split_result)
-
+final_split_result = test.bidirectional_maximum_matching(sentence = raw_string, word_list = word_list)
+print "final_split_result:", "|".join(final_split_result)
 
 
 
@@ -424,4 +423,11 @@ print "len(essay_segmentation_result_list[0]):", len(essay_segmentation_result_l
 print "essay_segmentation_result_list[0]:", essay_segmentation_result_list[0]
 print "end making words segmentation at " + time.strftime('%Y-%m-%d %X', time.localtime()) + "."
 
-test.word_frequency_statistic(essay_word_2d_list = essay_segmentation_result_list)
+
+
+# news record 3
+essay_word_dict = test.word_frequency_statistic(essay_word_2d_list = essay_segmentation_result_list)
+for key, value in essay_word_dict.items():
+    print key, value
+print "len(essay_word_dict):", len(essay_word_dict)
+print essay_word_dict
