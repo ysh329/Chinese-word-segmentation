@@ -23,7 +23,7 @@ class segmentation_result_analyser(object):
 
     def word_frequency_statistic(self, essay_word_2d_list):
         """essay_word_list is a 2-D list"""
-        #essay_word_2d_list = sum(sum(essay_word_2d_list, []), [])
+        essay_word_2d_list = sum(sum(essay_word_2d_list, []), [])
         essay_word_set = set(essay_word_2d_list)
         word_list = map(lambda word: word, essay_word_set)
 
