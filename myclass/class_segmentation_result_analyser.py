@@ -13,7 +13,7 @@ __author__ = 'yuens'
 ################################### PART1 IMPORT ######################################
 import pandas as pd
 import matplotlib.pyplot as plt
-
+import numpy as np
 ################################### PART2 CLASS && FUNCTION ###########################
 class segmentation_result_analyser(object):
     def __init__(self):
@@ -27,6 +27,7 @@ class segmentation_result_analyser(object):
         try:
             essay_word_2d_list = sum(sum(essay_word_2d_list, []), [])
         except:
+            pass
             essay_word_2d_list = sum(essay_word_2d_list, [])
         finally:
             essay_word_set = set(essay_word_2d_list)
@@ -65,17 +66,28 @@ class segmentation_result_analyser(object):
     def show_top_n_words_plot(self, top_n_words_tuple_list, n):
         word_list = map(lambda tuple_word: tuple_word[0], top_n_words_tuple_list)
         showtimes_list = map(lambda tuple_word: tuple_word[1], top_n_words_tuple_list)
+        #std_showtimes = np.std(np.array(showtimes_list))
 
-        num_bins = len(showtimes_list)
-        #plt.hist(showtimes_list, num_bins, normed = 1, facecolor = 'green', alpha = 0.5)
-        plt.bar(left = xrange(len(showtimes_list)), height = showtimes_list, width = .85, color = 'green')
+        index = np.arange(n)
+        plt.xlabel('Words')
+        plt.ylabel('Frequency')
+        plt.ylim(0.0, max(showtimes_list) + 0.3*max(showtimes_list))
         plt.title('Top %d words frequency' % n)
+        bar_width = 0.5
+        plt.xticks(index + bar_width, word_list)
+        bar_entry = plt.bar(left = xrange(len(showtimes_list)),
+                height = showtimes_list,
+                width = .85,
+                alpha = 0.4, #opacity      Word Frequency
+                color = 'b',
+                label = 'Word Frequency')
+        plt.legend(bar_entry, ['Word Frequency'], 'best')
         plt.show()
 ################################### PART3 CLASS TEST ##################################
-'''
+
 Analyser = segmentation_result_analyser()
-testlist = [['a', 'a', 'd', 'e'], ['a', 'b'], ['c','a', 'b', 'c'], ['b', 'b', 'c', 'a', 'b', 'c', 'a', 'b'], ['c']]
-top_n = 4
+testlist = [['a','z','c','d','f','g','k','e','y','e','y','e','y','e','y', 'f','g','k','f','g','k','a','a' 'a', 'd', 'e', 'a', 'b', 'c','a', 'b', 'c', 'b', 'b', 'c', 'a', 'b', 'c', 'a'], ['b', 'c']]
+top_n = len(set(sum(testlist, [])))-1
 #print testlist
 word_dict = Analyser.word_frequency_statistic(essay_word_2d_list = testlist)
 sorted_word_tuple = Analyser.sort_dict(word_dict = word_dict)
@@ -83,7 +95,7 @@ sorted_word_tuple = Analyser.sort_dict(word_dict = word_dict)
 top_n_words_tuple_list = Analyser.get_top_n_words(sorted_word_tuple = sorted_word_tuple, n = top_n)
 Analyser.show_top_n_words_dataframe(top_n_words_tuple_list = top_n_words_tuple_list)
 Analyser.show_top_n_words_plot(top_n_words_tuple_list = top_n_words_tuple_list, n = top_n)
-'''
+
 # sort according to key
 #print sorted(dict1.items(), key=lambda d: d[0])
 # sort according to value
