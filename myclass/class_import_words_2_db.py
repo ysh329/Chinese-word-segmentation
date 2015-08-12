@@ -84,13 +84,23 @@ class import_words_2_db(object):
 
 
     def word_filter(self, word):
+        # filter #1 remove special sign in word
         sign_list=['"', "'", '~','`', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '-', '+', '=']
         sign_list.extend(["{", "[", "]", "}", "\\", "|", ";", ":", "<", ">", ",", ".", "/", "?"])
         sign_list.extend(['。', '，', '？', '！'])
         for idx in xrange(len(sign_list)):
             sign = sign_list[idx]
-            word.replace(sign, '')
-
+            word = word.replace(sign, '')
+        # filter #2 remove full width letter
+        full_width_letter_list = ['Ａ', 'Ｂ', 'Ｃ', 'Ｄ', 'Ｅ', 'Ｆ', 'Ｇ', 'Ｈ', 'Ｉ', 'Ｊ', 'Ｋ', 'Ｌ', \
+                                  'Ｍ', 'Ｎ', 'Ｏ', 'Ｐ', 'Ｑ', 'Ｒ', 'Ｓ', 'Ｔ', 'Ｕ', 'Ｖ', 'Ｗ', 'Ｘ', 'Ｙ', 'Ｚ', \
+                                  'ａ', 'ｂ', 'ｃ', 'ｄ', 'ｅ', 'ｆ', 'ｇ', 'ｈ', 'ｉ', 'ｊ', 'ｋ', 'ｌ', 'ｍ', 'ｎ', \
+                                  'ｏ', 'ｐ', 'ｑ', 'ｒ', 'ｓ', 'ｔ', 'ｕ', 'ｖ', 'ｗ', 'ｘ', 'ｙ', 'ｚ']
+        for idx in xrange(len(full_width_letter_list)):
+            letter = full_width_letter_list[idx]
+            if word.find(letter) != -1:
+                word = word.split(letter)[0]
+        # filter #3 judge if exist full width @ symbol. if exists, which means 'word' value is not pure.
         exist_at = word.find('＠')
         if exist_at > -1:
             word = word.split('＠')[0]

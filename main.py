@@ -37,6 +37,7 @@ def main():
     word_table_name = "chinese_word_table"
     general_words_file_dir = "./data/sogou_cellbase-utf8.txt"
     stopwords_base_dir = "./data/"
+    modern_chinese_dictionary_file_name = 'modern_chinese_dictionary.txt'
 
     WordsImporter = import_words_2_db()
     WordsImporter.create_database(database_name = word_database_name)
@@ -45,7 +46,7 @@ def main():
     #WordsImporter.insert_words_from_file_2_db(file_dir = general_words_file_dir, database_name = database_name, table_name = table_name)
     #WordsImporter.insert_stopwords_from_file_2_db(file_dir = stopwords_base_dir, database_name = database_name, table_name = table_name)
 
-    WordsImporter.insert_modern_chinese_dictionary_2_db(file_name = 'modern_chinese_dictionary.txt', database_name = word_database_name, table_name = word_table_name)
+    WordsImporter.insert_modern_chinese_dictionary_2_db(file_name = modern_chinese_dictionary_file_name, database_name = word_database_name, table_name = word_table_name)
 
 
     '''
