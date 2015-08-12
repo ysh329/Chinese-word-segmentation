@@ -53,11 +53,21 @@ class update_in_db(object):
 
     def update_showtimes_field(self, word_dict, database_name, table_name):
         cursor = self.con.cursor()
-        word_list = map(lambda word: word, word_dict)
-        showtimes_list = map(lambda showtimes: showtimes, word_dict)
+        word_list = map(lambda word: word.replace("'", '').replace('"', ""), word_dict.keys())
+        showtimes_list = map(lambda showtimes: showtimes, word_dict.values())
         try:
-            map(lambda word, showtimes: cursor.execute("""UPDATE SET showtimes=%d FROM %s.%s WHERE word='%s'""" % (showtimes, database_name, table_name, word)), word_list, showtimes_list)
+            # [VERSION 1]
+            map(lambda word, showtimes: cursor.execute("""UPDATE wordsDB.chinese_word_table SET showtimes=showtimes+%s WHERE word='%s'""" % (showtimes, word)), word_list, showtimes_list)
             self.con.commit()
+            '''
+            # [VERSION 2]
+            for idx in xrange(len(word_list)):
+                word = word_list[idx]
+                showtimes = showtimes_list[idx]
+                sql = """UPDATE %s.%s SET showtimes=showtimes+%s WHERE word='%s'""" % (database_name, table_name, showtimes, word)
+                cursor.execute(sql)
+                self.con.commit()
+            '''
         except MySQLdb.Error, e:
             self.con.rollback()
             print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])

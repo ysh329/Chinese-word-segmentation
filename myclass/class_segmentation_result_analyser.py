@@ -11,7 +11,7 @@
 # Last:
 __author__ = 'yuens'
 ################################### PART1 IMPORT ######################################
-import pandas as pd
+import pandas
 import matplotlib.pyplot as plt
 import numpy as np
 ################################### PART2 CLASS && FUNCTION ###########################
@@ -58,9 +58,9 @@ class segmentation_result_analyser(object):
         return top_n_words_tuple_list
 
     def show_top_n_words_dataframe(self, top_n_words_tuple_list):
-        df = pd.DataFrame( [[ij for ij in i] for i in top_n_words_tuple_list] )
-        df.rename(columns={0: 'word', 1: 'showtimes'}, inplace=True)
-        df = df.sort(['showtimes'], ascending=False)
+        df = pandas.DataFrame( [[ij for ij in i] for i in top_n_words_tuple_list] )
+        df.rename(columns={0: 'word', 1: 'showtimes'}, inplace = True)
+        df = df.sort(['showtimes'], ascending = False)
         print df.head()
 
     def show_top_n_words_plot(self, top_n_words_tuple_list, n):
