@@ -28,7 +28,7 @@ class segmentation_result_analyser(object):
             essay_word_2d_list = sum(sum(essay_word_2d_list, []), [])
         except:
             pass
-            essay_word_2d_list = sum(essay_word_2d_list, [])
+            #essay_word_2d_list = sum(essay_word_2d_list, [])
         finally:
             essay_word_set = set(essay_word_2d_list)
 
@@ -84,7 +84,7 @@ class segmentation_result_analyser(object):
         plt.legend(bar_entry, ['Word Frequency'], 'best')
         plt.show()
 ################################### PART3 CLASS TEST ##################################
-
+'''
 Analyser = segmentation_result_analyser()
 testlist = [['a','z','c','d','f','g','k','e','y','e','y','e','y','e','y', 'f','g','k','f','g','k','a','a' 'a', 'd', 'e', 'a', 'b', 'c','a', 'b', 'c', 'b', 'b', 'c', 'a', 'b', 'c', 'a'], ['b', 'c']]
 top_n = len(set(sum(testlist, [])))-1
@@ -95,8 +95,4 @@ sorted_word_tuple = Analyser.sort_dict(word_dict = word_dict)
 top_n_words_tuple_list = Analyser.get_top_n_words(sorted_word_tuple = sorted_word_tuple, n = top_n)
 Analyser.show_top_n_words_dataframe(top_n_words_tuple_list = top_n_words_tuple_list)
 Analyser.show_top_n_words_plot(top_n_words_tuple_list = top_n_words_tuple_list, n = top_n)
-
-# sort according to key
-#print sorted(dict1.items(), key=lambda d: d[0])
-# sort according to value
-#print sorted(dict1.items(), key=lambda d: d[1])
+'''

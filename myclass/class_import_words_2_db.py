@@ -83,17 +83,25 @@ class import_words_2_db(object):
             print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
 
 
-    def word_filter_at(self, word):
+    def word_filter(self, word):
+        sign_list=['"', "'", '~','`', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '-', '+', '=']
+        sign_list.extend(["{", "[", "]", "}", "\\", "|", ";", ":", "<", ">", ",", ".", "/", "?"])
+        sign_list.extend(['。', '，', '？', '！'])
+        for idx in xrange(len(sign_list)):
+            sign = sign_list[idx]
+            word.replace(sign, '')
+
         exist_at = word.find('＠')
         if exist_at > -1:
             word = word.split('＠')[0]
+
         return word
 
 
     def insert_modern_chinese_dictionary_2_db(self, file_name, database_name, table_name):
         print "start insert words from modern Chinese dictionary to databse at " + time.strftime('%Y-%m-%d %X', time.localtime())
         print "file_name:", file_name
-        file_dir = os.path.join("../data/", file_name)
+        file_dir = os.path.join("./data/", file_name)
         print "file_dir:", file_dir
         try: f = open(file_dir)
         except: print "file %s doesn't exist." % file_name; return
@@ -102,7 +110,7 @@ class import_words_2_db(object):
             print "use parallelize method."
             lines = f.readlines()
             word_list = sum(map(lambda line: re.compile('…(.*)＠').findall(line.replace('"', '|').replace("'", "|").strip()), lines), [])
-            word_list = map(lambda word: self.word_filter_at(word), word_list)
+            word_list = map(lambda word: self.word_filter(word), word_list)
             meaning_list = sum(map(lambda line: re.compile('＠(.*)').findall(line.replace('"', '|').replace("'", "|").strip()), lines), [])
             print "len(word_list):", len(word_list)
             print "word_list[0]:", word_list[0]
@@ -225,7 +233,7 @@ class import_words_2_db(object):
             print "Completed words insert task."
 
         # garbage collector
-        del sqls, f, lines, word_list, pinyin_list, counter, success_counter, word, pinyin, sql
+        del sqls, f, lines, word_list, pinyin_list
         gc.collect()
 
     def get_word_in_line(self, line):
@@ -292,7 +300,7 @@ class import_words_2_db(object):
         print "insert success rate:%0.3f" % (self.stopwords_success_counter / float(len(stopwords_list)))
 
         # garbage collector
-        del cur_directory_list, stopwords_file_list, stopwords_file_directory_list, f_stopwords_list, stopwords_base_dir, stopwords_list
+        del cur_directory_list, stopwords_file_list, stopwords_file_directory_list, f_stopwords_list, stopwords_list
         gc.collect()
 
 

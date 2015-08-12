@@ -33,22 +33,22 @@ def main():
     #       Import words data from Sogou's cell words base and Chinese modern dictionary
     #       to database 'wordsDB' table 'chinese_word_table'.
     # initial parameters
-    database_name = "wordsDB"
-    table_name = "chinese_word_table"
-    general_words_file_dir = "../data/sogou_cellbase-utf8.txt"
-    stopwords_base_dir = "../data/"
+    word_database_name = "wordsDB"
+    word_table_name = "chinese_word_table"
+    general_words_file_dir = "./data/sogou_cellbase-utf8.txt"
+    stopwords_base_dir = "./data/"
 
     WordsImporter = import_words_2_db()
-    WordsImporter.create_database(database_name = database_name)
-    WordsImporter.create_table(database_name= database_name, table_name = table_name)
+    WordsImporter.create_database(database_name = word_database_name)
+    WordsImporter.create_table(database_name= word_database_name, table_name = word_table_name)
+
+    #WordsImporter.insert_words_from_file_2_db(file_dir = general_words_file_dir, database_name = database_name, table_name = table_name)
+    #WordsImporter.insert_stopwords_from_file_2_db(file_dir = stopwords_base_dir, database_name = database_name, table_name = table_name)
+
+    WordsImporter.insert_modern_chinese_dictionary_2_db(file_name = 'modern_chinese_dictionary.txt', database_name = word_database_name, table_name = word_table_name)
+
+
     '''
-    WordsImporter.insert_words_from_file_2_db(file_dir = general_words_file_dir, database_name = database_name, table_name = table_name)
-    WordsImporter.insert_stopwords_from_file_2_db(file_dir = stopwords_base_dir, database_name = database_name, table_name = table_name)
-    '''
-    WordsImporter.insert_modern_chinese_dictionary_2_db(file_name = 'modern_chinese_dictionary.txt', database_name = database_name, table_name = table_name)
-
-
-
     # STEP2. (CLASS class_update_in_db.py)
     #        Update or increase table's some fields, such as 'pinyin', 'meaning' fields, etc.
     # initial parameters
@@ -104,6 +104,7 @@ def main():
     database_name = "wordsDB"
     word_table_name = "chinese_word_table"
     Updator.update_showtimes_field(word_dict = essay_word_dict, database_name = word_database_name, table_name = word_table_name)
+    '''
 ################################ PART4 EXECUTE ##################################
 if __name__ == "__main__":
     main()
