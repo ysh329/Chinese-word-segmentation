@@ -29,6 +29,7 @@ from myclass.class_bidirectional_matching_algorithm import *
 from myclass.class_segmentation_result_analyser import *
 ################################### PART2 MAIN && FUNCTION ############################
 def main():
+
     # STEP1.(CLASS class_import_words_2_db.py)
     #       Import words data from Sogou's cell words base and Chinese modern dictionary
     #       to database 'wordsDB' table 'chinese_word_table'.
@@ -38,7 +39,7 @@ def main():
     general_words_file_dir = "./data/sogou_cellbase-utf8.txt"
     stopwords_base_dir = "./data/"
     modern_chinese_dictionary_file_name = 'modern_chinese_dictionary.txt'
-
+    '''
     WordsImporter = import_words_2_db()
     WordsImporter.create_database(database_name = word_database_name)
     WordsImporter.create_table(database_name= word_database_name, table_name = word_table_name)
@@ -47,8 +48,6 @@ def main():
     #WordsImporter.insert_stopwords_from_file_2_db(file_dir = stopwords_base_dir, database_name = database_name, table_name = table_name)
 
     WordsImporter.insert_modern_chinese_dictionary_2_db(file_name = modern_chinese_dictionary_file_name, database_name = word_database_name, table_name = word_table_name)
-
-
     '''
     # STEP2. (CLASS class_update_in_db.py)
     #        Update or increase table's some fields, such as 'pinyin', 'meaning' fields, etc.
@@ -56,8 +55,7 @@ def main():
     word_database_name = "wordsDB"
     Updator = update_in_db(database_name = word_database_name)
 
-
-
+    '''
     # STEP3. (CLASS class_bidirectional_matching_algorithm.py)
     #        Make Chinese word segmentation by MM and RMM methods.
     # initial parameters

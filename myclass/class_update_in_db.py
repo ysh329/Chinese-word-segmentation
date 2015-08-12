@@ -23,7 +23,7 @@ class update_in_db(object):
         try:
             self.con = MySQLdb.connect(host = "localhost", user = "root", passwd = "931209", db = database_name, charset = "utf8")
             print "Connect MySQL database successfully."
-        except:
+        except MySQLdb.Error, e:
             print "Connect database failed."
             print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
 
