@@ -14,13 +14,31 @@ __author__ = 'yuens'
 import pandas
 import matplotlib.pyplot as plt
 import numpy as np
+import logging
+import  time
 ################################### PART2 CLASS && FUNCTION ###########################
 class segmentation_result_analyser(object):
     def __init__(self):
-        pass
+        self.start = time.clock()
+        logging.basicConfig(level = logging.DEBUG,
+                  format = '%(asctime)s  %(filename)19s[line:%(lineno)3d]  %(levelname)5s  %(message)s',
+                  datefmt = '%y-%m-%d %H:%M:%S',
+                  #filename = 'class_create_databases.log',
+                  filename = './main.log',
+                  filemode = 'a')
+        console = logging.StreamHandler()
+        console.setLevel(logging.INFO)
+
+        formatter = logging.Formatter('%(asctime)s  %(filename)19s[line:%(lineno)3d]  %(levelname)5s  %(message)s')
+        console.setFormatter(formatter)
+
+        logging.getLogger('').addHandler(console)
+        logging.info("[segmentation_result_analyser][__init__]START at " + time.strftime('%Y-%m-%d %X', time.localtime()))
 
     def __del__(self):
-        pass
+        self.stop = time.clock()
+        logging.info("[segmentation_result_analyser][__del__]The class run time is : %.03f seconds" % (self.stop - self.start))
+        logging.info("[segmentation_result_analyser][__del__]END at:" + time.strftime('%Y-%m-%d %X', time.localtime()))
 
     def word_frequency_statistic(self, essay_word_2d_list):
         """essay_word_list is a 2-D list"""
@@ -50,10 +68,12 @@ class segmentation_result_analyser(object):
 
     def get_top_n_words(self, sorted_word_tuple, n = 10):
         if n >= len(sorted_word_tuple) or n < 1:
-            print "input n is wrong, please try again."
+            #print "input n is wrong, please try again."
+            logging.info("[segmentation_result_analyser][get_top_n_words]input n is wrong, please try again.")
             return
         else:
-            print "sort by top %s words(according to 10 biggest show times)." % n
+            #print "sort by top %s words(according to 10 biggest show times)." % n
+            logging.info("[segmentation_result_analyser][get_top_n_words]sort by top %s words(according to 10 biggest show times)." % n)
             top_n_words_tuple_list = sorted_word_tuple[:n]
         return top_n_words_tuple_list
 
@@ -61,9 +81,11 @@ class segmentation_result_analyser(object):
         df = pandas.DataFrame( [[ij for ij in i] for i in top_n_words_tuple_list] )
         df.rename(columns={0: 'word', 1: 'showtimes'}, inplace = True)
         df = df.sort(['showtimes'], ascending = False)
-        print df.head()
+        #print df.head()
+        logging.info("[segmentation_result_analyser][get_top_n_words]df.head():", df.head())
 
     def show_top_n_words_plot(self, top_n_words_tuple_list, n):
+        logging.info("[segmentation_result_analyser][show_top_n_words_plot]")
         word_list = map(lambda tuple_word: tuple_word[0], top_n_words_tuple_list)
         showtimes_list = map(lambda tuple_word: tuple_word[1], top_n_words_tuple_list)
         #std_showtimes = np.std(np.array(showtimes_list))

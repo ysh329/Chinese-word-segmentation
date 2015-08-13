@@ -14,42 +14,70 @@
 __author__ = 'yuens'
 ################################### PART1 IMPORT ######################################
 import MySQLdb
-import sys
+#import sys
 import gc
 import os
 import re
 import time
+import logging
 ################################### PART2 CLASS && FUNCTION ###########################
 class import_words_2_db(object):
     def __init__(self):
-        print "start at:" + time.strftime('%Y-%m-%d %X', time.localtime())
         self.start = time.clock()
-        self.con = MySQLdb.connect(host = "localhost", user = "root", passwd = "931209", charset = "utf8")
+        logging.basicConfig(level = logging.DEBUG,
+                  format = '%(asctime)s  %(filename)19s[line:%(lineno)3d]  %(levelname)5s  %(message)s',
+                  datefmt = '%y-%m-%d %H:%M:%S',
+                  #filename = 'class_create_databases.log',
+                  filename = './main.log',
+                  filemode = 'a')
+        console = logging.StreamHandler()
+        console.setLevel(logging.INFO)
+
+        formatter = logging.Formatter('%(asctime)s  %(filename)19s[line:%(lineno)3d]  %(levelname)5s  %(message)s')
+        console.setFormatter(formatter)
+
+        logging.getLogger('').addHandler(console)
+        logging.info("[import_words_2_db][__init__]START at " + time.strftime('%Y-%m-%d %X', time.localtime()))
+        try:
+            self.con = MySQLdb.connect(host = "localhost", user = "root", passwd = "931209", charset = "utf8")
+            logging.info("[import_words_2_db][__init__]Success in connecting MySQL.")
+        except MySQLdb.Error, e:
+            #print 'Fail in connecting MySQL.'
+            #print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            logging.error("[import_words_2_db][__init__]Fail in connecting MySQL.")
+            logging.error("[import_words_2_db][__init__]MySQL Error %d: %s." % (e.args[0], e.args[1]))
 
     def __del__(self):
         self.con.close()
         self.stop = time.clock()
-        print "The function run time is : %.03f seconds" % (self.stop - self.start)
-        print "end at:" + time.strftime('%Y-%m-%d %X', time.localtime())
+        logging.info("[import_words_2_db][__del__]Quit database successfully.")
+        logging.info("[import_words_2_db][__del__]The class run time is : %.03f seconds" % (self.stop - self.start))
+        logging.info("[import_words_2_db][__del__]END at:" + time.strftime('%Y-%m-%d %X', time.localtime()))
 
 
 
     def create_database(self, database_name):
         try:
             self.con = MySQLdb.connect(host = "localhost", user = "root", passwd = "931209", charset = "utf8")
+            logging.info("[import_words_2_db][create_database]Success in connecting MySQL.")
         except MySQLdb.Error, e:
-            print 'Fail in connecting MySQL.'
-            print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            #print 'Fail in connecting MySQL.'
+            #print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            logging.error("[import_words_2_db][create_database]Fail in connecting MySQL.")
+            logging.error("[import_words_2_db][create_database]MySQL Error %d: %s." % (e.args[0], e.args[1]))
 
         cursor = self.con.cursor()
         sqls = ['SET NAMES UTF8', 'SELECT VERSION()', 'CREATE DATABASE %s' % database_name]
         try:
             map(lambda x: cursor.execute(x), sqls)
             self.con.commit()
+            logging.info("[import_words_2_db][create_database]Successfully create database %s in MySQL." % database_name)
         except MySQLdb.Error, e:
             self.con.rollback()
-            print 'Fail in creating database %s.' % database_name
-            print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            #print 'Fail in executing sql:%s.' % sqls
+            #print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            logging.error('[import_words_2_db][create_database]Fail in executing sqls:%s.' % sqls)
+            logging.error('[import_words_2_db][create_database]MySQL Error %d: %s.' % (e.args[0], e.args[1]))
 
 
 
@@ -77,10 +105,13 @@ class import_words_2_db(object):
         try:
             map(lambda sql:cursor.execute(sql), sqls)
             self.con.commit()
+            logging.info("[import_words_2_db][create_table]Successfully create table %s in MySQL." % table_name)
         except MySQLdb.Error, e:
             self.con.rollback()
-            print 'Fail in creating %s table.' % table_name
-            print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            #print 'Fail in creating %s table.' % table_name
+            #print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            logging.error('[import_words_2_db][create_table]Fail in creating %s table.' % table_name)
+            logging.error('[import_words_2_db][create_table]MySQL Error %d: %s.' % (e.args[0], e.args[1]))
 
 
     def word_filter(self, word):
@@ -109,25 +140,40 @@ class import_words_2_db(object):
 
 
     def insert_modern_chinese_dictionary_2_db(self, file_name, database_name, table_name):
-        print "start insert words from modern Chinese dictionary to databse at " + time.strftime('%Y-%m-%d %X', time.localtime())
-        print "file_name:", file_name
+        #print "start insert words from modern Chinese dictionary to databse at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]Start insert words from modern Chinese dictionary to databse at " + time.strftime('%Y-%m-%d %X', time.localtime()))
+        #print "file_name:", file_name
+        logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]File name of modern chinesedictinonary:%s." % file_name)
         file_dir = os.path.join("./data/", file_name)
-        print "file_dir:", file_dir
-        try: f = open(file_dir)
-        except: print "file %s doesn't exist." % file_name; return
+        #print "file_dir:", file_dir
+        logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]File directory of modern chinesedictinonary:%s." % file_dir)
 
         try:
-            print "use parallelize method."
+            f = open(file_dir)
+        except:
+            #print "file %s doesn't exist." % file_name; return
+            logging.error("[import_words_2_db][insert_modern_chinese_dictionary_2_db]Dictionary file %s doesn't exist." % file_name)
+            return
+
+        try:
+            #print "use parallelize method."
+            logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]Get word and meaning list using parallelize method.")
             lines = f.readlines()
             word_list = sum(map(lambda line: re.compile('…(.*)＠').findall(line.replace('"', '|').replace("'", "|").strip()), lines), [])
             word_list = map(lambda word: self.word_filter(word), word_list)
             meaning_list = sum(map(lambda line: re.compile('＠(.*)').findall(line.replace('"', '|').replace("'", "|").strip()), lines), [])
-            print "len(word_list):", len(word_list)
-            print "word_list[0]:", word_list[0]
-            print "len(meaning_list):", len(meaning_list)
-            print "meaning_list[0]:", meaning_list[0]
+            #print "len(word_list):", len(word_list)
+            logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]len(word_list):", len(word_list))
+
+            #print "word_list[0]:", word_list[0]
+            logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]word_list[0]:", word_list[0])
+            #print "len(meaning_list):", len(meaning_list)
+            logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]len(meaning_list):", len(meaning_list))
+            #print "meaning_list[0]:", meaning_list[0]
+            logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]meaning_list[0]:", meaning_list[0])
         except:
-            print "out of memory, failed in using paralleize method."
+            #print "out of memory, failed in using paralleize method."
+            logging.error("[import_words_2_db][insert_modern_chinese_dictionary_2_db]out of memory, failed in using paralleize method.")
             f.close()
             return
         finally:
@@ -138,6 +184,7 @@ class import_words_2_db(object):
         self.success_insert_meaing_dont_exist_word_counter = 0
         map(lambda word, meaning: self.find_word_and_insert_meaning_2_db(word = word, meaning = meaning, source = source, database_name = database_name, table_name = table_name), word_list, meaning_list)
 
+        '''
         print "finish insert words from modern Chinese dictionary to databse at " + time.strftime('%Y-%m-%d %X', time.localtime())
         print "summation of words(or meanings):%d." % len(word_list)
         print "success inserted words' meaning(exist words before) num.:%d." % self.success_insert_meaing_counter
@@ -145,6 +192,14 @@ class import_words_2_db(object):
         print "insert success rate(exist words before):%f." % (self.success_insert_meaing_counter / float(len(word_list)))
         print "total insert success rate:%f." % ((self.success_insert_meaing_counter + self.success_insert_meaing_dont_exist_word_counter) / float(len(word_list)))
         print "Completed words'meaning insert task."
+        '''
+        logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]finish insert words from modern Chinese dictionary to databse at " + time.strftime('%Y-%m-%d %X', time.localtime()))
+        logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]summation of words(or meanings):%d." % len(word_list))
+        logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]success inserted words' meaning(exist words before) num.:%d." % self.success_insert_meaing_counter)
+        logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]success inserted words' meaning(Dont exist words before) num.:%d." % self.success_insert_meaing_dont_exist_word_counter)
+        logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]insert success rate(exist words before):%f." % (self.success_insert_meaing_counter / float(len(word_list))))
+        logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]total insert success rate:%f." % ((self.success_insert_meaing_counter + self.success_insert_meaing_dont_exist_word_counter) / float(len(word_list))))
+        logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]Completed words'meaning insert task.")
 
         # garbage collector
         del word_list, meaning_list, f, file_dir
@@ -155,14 +210,14 @@ class import_words_2_db(object):
         cursor = self.con.cursor()
         if self.success_insert_meaing_counter % 100 == 0: print "self.success_insert_meaing_counter:", self.success_insert_meaing_counter
         if self.success_insert_meaing_dont_exist_word_counter % 10 == 0 and self.success_insert_meaing_dont_exist_word_counter != 0:
-            print "self.success_insert_meaing_dont_exist_word_counter:", self.success_insert_meaing_dont_exist_word_counter
+            #print "self.success_insert_meaing_dont_exist_word_counter:", self.success_insert_meaing_dont_exist_word_counter
+            logging.info("[import_words_2_db][find_word_and_insert_meaning_2_db]self.success_insert_meaing_dont_exist_word_counter:", self.success_insert_meaing_dont_exist_word_counter)
         try:
             cursor.execute("SELECT id FROM %s.%s WHERE word='%s'" % (database_name, table_name, word))
             word_id = cursor.fetchone()
             if word_id != None:
                 word_id = int(word_id[0])
                 cursor.execute("""UPDATE %s.%s set meaning="%s", source="%s" WHERE id=%s """ % (database_name, table_name, meaning, source, word_id))
-
                 self.success_insert_meaing_counter += 1
             else: # word_id == None
                 sql = """INSERT INTO %s.%s
@@ -172,13 +227,16 @@ class import_words_2_db(object):
                 self.success_insert_meaing_dont_exist_word_counter += 1
             self.con.commit()
         except MySQLdb.Error, e:
-            print "abnormal status in MySQL word %s." % word
-            print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            #print "abnormal status in MySQL word %s." % word
+            #print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            logging.error("[import_words_2_db][find_word_and_insert_meaning_2_db]abnormal status in MySQL word %s." % word)
+            logging.error("[import_words_2_db][find_word_and_insert_meaning_2_db]MySQL Error %d: %s." % (e.args[0], e.args[1]))
         return
 
 
     def insert_words_from_file_2_db(self, file_dir, database_name, table_name):
-        print "start insert words from sogou word file to databse at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        #print "start insert words from sogou word file to databse at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        logging.info("[import_words_2_db][insert_words_from_file_2_db]start insert words from sogou word file to databse at " + time.strftime('%Y-%m-%d %X', time.localtime()))
         self.words_start_time = time.clock()
 
         cursor = self.con.cursor()
@@ -192,29 +250,33 @@ class import_words_2_db(object):
         try:
             map(lambda sql: cursor.execute(sql), sqls)
             self.con.commit()
+            logging.info("[import_words_2_db][insert_words_from_file_2_db]insert task finished successfully")
         except MySQLdb.Error, e:
-            print 'Fail in connecting MySQL.'
-            print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
-
+            #print 'Fail in connecting MySQL.'
+            #print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            logging.error("[import_words_2_db][insert_words_from_file_2_db]Fail in connecting MySQL.")
+            logging.error("[import_words_2_db][insert_words_from_file_2_db]MySQL Error %d: %s." % (e.args[0], e.args[1]))
         #print type(f)
         #print sys.getsizeof(f)
-
         try:
-            print "Use parallelization method."
+            #print "Use parallelization method."
+            logging.info("[import_words_2_db][insert_words_from_file_2_db]Use parallelization method.")
             # method #2 map method of reading files
             f = open(file_dir,"r")
             lines = f.readlines()
             word_list = map(lambda line: self.get_word_in_line(line), lines)
             pinyin_list = map(lambda line: self.get_pinyin_in_line(line), lines)
-            print "len(word_list):", len(word_list)
-            print "len(pinyin_list):", len(pinyin_list)
+            #print "len(word_list):", len(word_list)
+            #print "len(pinyin_list):", len(pinyin_list)
+            logging.info("[import_words_2_db][insert_words_from_file_2_db]len(word_list):", len(word_list))
+            logging.info("[import_words_2_db][insert_words_from_file_2_db]len(pinyin_list):", len(pinyin_list))
             f.close()
-
             source = "sogou"
             map(lambda word, pinyin: cursor.execute("""INSERT INTO %s(word, pinyin, showtimes, weight, meaning, cixing, type1, type2, source) VALUES('%s', '%s', 0, 0.0, 'ex', 'cx', 't1', 't2', '%s')""" % (table_name, word, pinyin, source)), word_list, pinyin_list)
             self.con.commit()
         except:
-            print "MemoryError, can't use parallelization method, switch to general method."
+            #print "MemoryError, can't use parallelization method, switch to general method."
+            logging.error("[import_words_2_db][insert_words_from_file_2_db]MemoryError, can't use parallelization method, switch to general method.")
             # method #1 for-loop method of reading files
             counter = 0
             success_counter = 0
@@ -230,17 +292,28 @@ class import_words_2_db(object):
                     self.con.commit()
                     success_counter += 1
                     if success_counter % 1000 == 0:
-                        print "#%d successful insert of word #%d." % (success_counter, counter)
+                        #print "#%d successful insert of word #%d." % (success_counter, counter)
+                        logging.info("[import_words_2_db][insert_words_from_file_2_db]#%d successful insert of word #%d." % (success_counter, counter))
                 except MySQLdb.Error, e:
                     self.con.rollback()
-                    print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+                    #print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+                    logging.error("[import_words_2_db][insert_words_from_file_2_db]MySQL Error %d: %s." % (e.args[0], e.args[1]))
             self.words_end_time = time.clock()
+            '''
             print "insert task of general words finished at " + time.strftime('%Y-%m-%d %X', time.localtime()) + "."
             print "elapsed time of general words insert task: %05f seconds." % (self.words_end_time - self.words_start_time)
             print "summation of words:%d." % counter
             print "success inserted words:%d." % success_counter
             print "insert success rate:%f." % (success_counter / float(counter))
             print "Completed words insert task."
+            '''
+            logging.info("[import_words_2_db][insert_words_from_file_2_db]insert task of general words finished at " + time.strftime('%Y-%m-%d %X', time.localtime()) + ".")
+            logging.info("[import_words_2_db][insert_words_from_file_2_db]elapsed time of general words insert task: %05f seconds." % (self.words_end_time - self.words_start_time))
+            logging.info("[import_words_2_db][insert_words_from_file_2_db]summation of words:%d." % counter)
+            logging.info("[import_words_2_db][insert_words_from_file_2_db]success inserted words:%d." % success_counter)
+            logging.info("[import_words_2_db][insert_words_from_file_2_db]insert success rate:%f." % (success_counter / float(counter)))
+            logging.info("[import_words_2_db][insert_words_from_file_2_db]Completed words insert task.")
+
 
         # garbage collector
         del sqls, f, lines, word_list, pinyin_list
@@ -259,19 +332,22 @@ class import_words_2_db(object):
 
 
     def insert_stopwords_from_file_2_db(self, file_dir, database_name, table_name):
-        print "start insert stopwords to database at " + time.strftime('%Y-%m-%d %X', time.localtime()) + "."
+        #print "start insert stopwords to database at " + time.strftime('%Y-%m-%d %X', time.localtime()) + "."
+        logging.info("[import_words_2_db][insert_stopwords_from_file_2_db]start insert stopwords to database at " + time.strftime('%Y-%m-%d %X', time.localtime()) + ".")
         cur_directory_list = os.listdir(file_dir)
         stopwords_file_list = filter(lambda file_name: file_name.find("stopwords") > -1, cur_directory_list)
 
         stopwords_file_directory_list = map(lambda file_name:os.path.join(file_dir, file_name), stopwords_file_list)
         source = "stopwords:" + ",".join(sum(map(lambda file_name: re.compile('(.*)_stopword').findall(file_name), cur_directory_list), []))
-        print "source:", source
+        #print "source:", source
+        logging.info("[import_words_2_db][insert_stopwords_from_file_2_db]source:", source)
         #try:
         f_stopwords_list = map(lambda file_dir: open(file_dir), stopwords_file_directory_list)
         stopwords_file_list = map(lambda f: f.readlines(), f_stopwords_list)
         stopwords_list = map(lambda stopword: stopword.strip(), set(sum(stopwords_file_list, [])))
         stopwords_list = filter(lambda stopword: stopword != "", stopwords_list)
-        print "len(stopwords_list):", len(stopwords_list)
+        #print "len(stopwords_list):", len(stopwords_list)
+        logging.info("[import_words_2_db][insert_stopwords_from_file_2_db]len(stopwords_list):", len(stopwords_list))
 
         self.stopwords_success_counter = 0
         self.stopwords_start_time = time.clock()
@@ -303,11 +379,18 @@ class import_words_2_db(object):
         '''
 
         self.stopwords_end_time = time.clock()
+        '''
         print "insert task of stopwords finished at " + time.strftime('%Y-%m-%d %X', time.localtime()) + "."
         print "elapsed time of stopwords insert task: %05f seconds." % (self.stopwords_end_time - self.stopwords_start_time)
         print "all insert num.(contain failed records):", len(stopwords_list)
         print "sucess insert num.:", self.stopwords_success_counter
         print "insert success rate:%0.3f" % (self.stopwords_success_counter / float(len(stopwords_list)))
+        '''
+        logging.info("[import_words_2_db][insert_stopwords_from_file_2_db]insert task of stopwords finished at " + time.strftime('%Y-%m-%d %X', time.localtime()) + ".")
+        logging.info("[import_words_2_db][insert_stopwords_from_file_2_db]elapsed time of stopwords insert task: %05f seconds." % (self.stopwords_end_time - self.stopwords_start_time))
+        logging.info("[import_words_2_db][insert_stopwords_from_file_2_db]all insert num.(contain failed records):", len(stopwords_list))
+        logging.info("[import_words_2_db][insert_stopwords_from_file_2_db]sucess insert num.:", self.stopwords_success_counter)
+        logging.info("[import_words_2_db][insert_stopwords_from_file_2_db]insert success rate:%0.3f" % (self.stopwords_success_counter / float(len(stopwords_list))))
 
         # garbage collector
         del cur_directory_list, stopwords_file_list, stopwords_file_directory_list, f_stopwords_list, stopwords_list
@@ -322,9 +405,9 @@ class import_words_2_db(object):
             if word_exist:
                 if source != '\\' or source != '"':
                     sql = """UPDATE %s.%s
-                 SET type1='stopword',
-                  source='%s'
-                   WHERE word="%s" """ % (database_name, table_name, source, stopword)
+                        SET type1='stopword',
+                        source='%s'
+                        WHERE word="%s" """ % (database_name, table_name, source, stopword)
                 cursor.execute(sql)
                 self.con.commit()
             else:
@@ -335,10 +418,12 @@ class import_words_2_db(object):
                 cursor.execute(sql)
                 self.con.commit()
             self.stopwords_success_counter += 1
-            print "self.stopwords_success_counter:", self.stopwords_success_counter
+            #print "self.stopwords_success_counter:", self.stopwords_success_counter
+            logging.info("[import_words_2_db][insert_stopword_2_db]self.stopwords_success_counter:", self.stopwords_success_counter)
         except MySQLdb.Error, e:
             self.con.rollback()
-            print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            #print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            logging.error("[import_words_2_db][insert_stopword_2_db]MySQL Error %d: %s." % (e.args[0], e.args[1]))
 
 
 

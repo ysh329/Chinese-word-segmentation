@@ -16,20 +16,43 @@
 __author__ = 'yuens'
 ################################### PART1 IMPORT ######################################
 import MySQLdb
-
+import logging
+import time
 ################################### PART2 CLASS && FUNCTION ###########################
 class update_in_db(object):
     def __init__(self, database_name):
+        self.start = time.clock()
+        logging.basicConfig(level = logging.DEBUG,
+                  format = '%(asctime)s  %(filename)19s[line:%(lineno)3d]  %(levelname)5s  %(message)s',
+                  datefmt = '%y-%m-%d %H:%M:%S',
+                  #filename = 'class_create_databases.log',
+                  filename = './main.log',
+                  filemode = 'a')
+        console = logging.StreamHandler()
+        console.setLevel(logging.INFO)
+
+        formatter = logging.Formatter('%(asctime)s  %(filename)19s[line:%(lineno)3d]  %(levelname)5s  %(message)s')
+        console.setFormatter(formatter)
+
+        logging.getLogger('').addHandler(console)
+        logging.info("[update_in_db][__init__]START at " + time.strftime('%Y-%m-%d %X', time.localtime()))
         try:
             self.con = MySQLdb.connect(host = "localhost", user = "root", passwd = "931209", db = database_name, charset = "utf8")
-            print "Connect MySQL database successfully."
+            #print "Connect MySQL database successfully."
+            logging.info("[update_in_db][__init__]Connect MySQL database successfully.")
         except MySQLdb.Error, e:
-            print "Connect database failed."
-            print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            #print "Connect database failed."
+            #print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            logging.error("[update_in_db][__init__]Connect database failed.")
+            logging.error("[update_in_db][__init__]MySQL Error %d: %s." % (e.args[0], e.args[1]))
 
     def __del__(self):
         self.con.close()
-        print "Quit MySQL database successfully."
+        self.stop = time.clock()
+        #print "Quit MySQL database successfully."
+        logging.info("[update_in_db][__del__]Quit MySQL database successfully.")
+        logging.info("[update_in_db][__del__]The class run time is : %.03f seconds" % (self.stop - self.start))
+        logging.info("[update_in_db][__del__]END at:" + time.strftime('%Y-%m-%d %X', time.localtime()))
 
     def remove_repeated_reocrd(self):
         """according to the value of field word"""
@@ -70,7 +93,8 @@ class update_in_db(object):
             '''
         except MySQLdb.Error, e:
             self.con.rollback()
-            print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            #print "MySQL Error %d: %s." % (e.args[0], e.args[1])
+            logging.error("[update_in_db][update_showtimes_field]MySQL Error %d: %s." % (e.args[0], e.args[1]))
 
 
 

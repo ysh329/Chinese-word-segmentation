@@ -29,6 +29,7 @@ from myclass.class_bidirectional_matching_algorithm import *
 from myclass.class_segmentation_result_analyser import *
 ################################### PART2 MAIN && FUNCTION ############################
 def main():
+    logging.info("[main]START at " + time.strftime('%Y-%m-%d %X', time.localtime()))
     '''
     # STEP1.(CLASS class_import_words_2_db.py)
     #       Import words data from Sogou's cell words base and Chinese modern dictionary
@@ -62,15 +63,31 @@ def main():
     word_database_name = "wordsDB"
     word_table_name = "chinese_word_table"
     essay_database_name = "essayDB"
-    essay_table_name = "securities_newspaper_shzqb_table"
+    essay_table_name1 = "securities_newspaper_shzqb_table"
+    essay_table_name2 = "securities_newspaper_zgzqb_table"
+    essay_table_name3 = "securities_newspaper_zqrb_table"
+    essay_table_name4 = "securities_newspaper_zqsb_table"
     sign_list = [".", "?", "!", "。", "，", "？", "！"]
 
     Segmentation = bidirectional_matching_algorithm(database_name = word_database_name)
     sign_list = Segmentation.get_string_or_list_unicode(sign_list)
-    stopword_list = Segmentation.get_sentence_stopword_list(database_name = word_database_name, table_name = word_table_name)
-    # news record 3!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    essay_list = Segmentation.get_essay_list(database_name = essay_database_name, table_name = essay_table_name)
-    essay_str_list = Segmentation.join_essays_title_and_content_into_list(essay_list = essay_list)
+
+    essay_list1 = Segmentation.get_essay_list(database_name = essay_database_name, table_name = essay_table_name1)
+    essay_str_list1 = Segmentation.join_essays_title_and_content_into_list(essay_list = essay_list1)
+    essay_list2 = Segmentation.get_essay_list(database_name = essay_database_name, table_name = essay_table_name2)
+    essay_str_list2 = Segmentation.join_essays_title_and_content_into_list(essay_list = essay_list2)
+    essay_list3 = Segmentation.get_essay_list(database_name = essay_database_name, table_name = essay_table_name3)
+    essay_str_list3 = Segmentation.join_essays_title_and_content_into_list(essay_list = essay_list3)
+    essay_list4 = Segmentation.get_essay_list(database_name = essay_database_name, table_name = essay_table_name4)
+    essay_str_list4 = Segmentation.join_essays_title_and_content_into_list(essay_list = essay_list4)
+    essay_str_list = []
+    essay_str_list.extend(essay_str_list1)
+    essay_str_list.extend(essay_str_list2)
+    essay_str_list.extend(essay_str_list3)
+    essay_str_list.extend(essay_str_list4)
+
+    #stopword_list = Segmentation.get_sentence_stopword_list(database_name = word_database_name, table_name = word_table_name)
+
     word_list = Segmentation.get_word_list(database_name = word_database_name, table_name = word_table_name)
     word_list.sort(key=len, reverse = True)
     '''
@@ -117,14 +134,19 @@ def main():
 
     essay_word_dict = Analyser.word_frequency_statistic(essay_word_2d_list = essay_segmentation_result_list)
     sorted_essay_word_tuple = Analyser.sort_dict(word_dict = essay_word_dict)
-    print 'sorted_essay_word_tuple[:10]:', sorted_essay_word_tuple[:10]
+    #print 'sorted_essay_word_tuple[:10]:', sorted_essay_word_tuple[:10]
+    logging.info("sorted_essay_word_tuple[:10]:", sorted_essay_word_tuple[:10])
     top_n_words_tuple_list = Analyser.get_top_n_words(sorted_word_tuple = sorted_essay_word_tuple, n = 30)
-    print 'top_n_words_tuple:', top_n_words_tuple_list
+    #print 'top_n_words_tuple:', top_n_words_tuple_list
+    logging.info("top_n_words_tuple:", top_n_words_tuple_list)
     Analyser.show_top_n_words_dataframe(top_n_words_tuple_list = top_n_words_tuple_list)
-    Analyser.show_top_n_words_plot(top_n_words_tuple_list = top_n_words_tuple_list, n = top_n)
-    print "len(essay_word_dict):", len(essay_word_dict)
+    #Analyser.show_top_n_words_plot(top_n_words_tuple_list = top_n_words_tuple_list, n = top_n)
+    #print "len(essay_word_dict):", len(essay_word_dict)
+    logging.info("[main]len(essay_word_dict):", len(essay_word_dict))
+    '''
     for word in essay_word_dict.keys():
         print word, essay_word_dict[word]
+    '''
 
 
     # STEP5. (CLASS class_update_in_db.py)
@@ -133,6 +155,8 @@ def main():
     database_name = "wordsDB"
     word_table_name = "chinese_word_table"
     Updator.update_showtimes_field(word_dict = essay_word_dict, database_name = word_database_name, table_name = word_table_name)
+
+    logging.info("[main]END at:" + time.strftime('%Y-%m-%d %X', time.localtime()))
 
 ################################ PART4 EXECUTE ##################################
 if __name__ == "__main__":

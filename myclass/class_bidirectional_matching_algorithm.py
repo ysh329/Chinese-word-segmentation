@@ -19,38 +19,61 @@ import sys
 import re
 import time
 import gc
+import  logging
 ################################### PART2 CLASS && FUNCTION ###########################
 class bidirectional_matching_algorithm(object):
     def __init__(self, database_name):
-        print "start at:" + time.strftime('%Y-%m-%d %X', time.localtime())
         self.start = time.clock()
+        logging.basicConfig(level = logging.DEBUG,
+                  format = '%(asctime)s  %(filename)19s[line:%(lineno)3d]  %(levelname)5s  %(message)s',
+                  datefmt = '%y-%m-%d %H:%M:%S',
+                  #filename = 'class_create_databases.log',
+                  filename = './main.log',
+                  filemode = 'a')
+        console = logging.StreamHandler()
+        console.setLevel(logging.INFO)
+
+        formatter = logging.Formatter('%(asctime)s  %(filename)19s[line:%(lineno)3d]  %(levelname)5s  %(message)s')
+        console.setFormatter(formatter)
+
+        logging.getLogger('').addHandler(console)
+        logging.info("[bidirectional_matching_algorithm][__init__]START at " + time.strftime('%Y-%m-%d %X', time.localtime()))
+
         try:
             self.con = MySQLdb.connect(host = "localhost", user = "root", passwd = "931209", db = database_name, charset = "utf8")
-            print "connected MySQL successfully."
+            #print "connected MySQL successfully."
+            logging.info("[bidirectional_matching_algorithm][__init__]Connected MySQL successfully.")
         except MySQLdb.Error, e:
-            print 'failed in connecting database %s.' % database_name
-            print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
-
+            #print 'failed in connecting database %s.' % database_name
+            #print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            logging.error("[bidirectional_matching_algorithm][__init__]Failed in connecting database %s." % database_name)
+            logging.error("[bidirectional_matching_algorithm][__init__]MySQL Error %d: %s." % (e.args[0], e.args[1]))
 
 
     def __del__(self):
         self.end = time.clock()
         self.con.close()
-        print "elapsed time:%0.3f" % (self.end - self.start)
-        print "end at:" + time.strftime('%Y-%m-%d %X', time.localtime())
+        #print "elapsed time:%0.3f" % (self.end - self.start)
+        #print "end at:" + time.strftime('%Y-%m-%d %X', time.localtime())
+        logging.info("[bidirectional_matching_algorithm][__del__]Elapsed time:%0.3f" % (self.end - self.start))
+        logging.info("[bidirectional_matching_algorithm][__del__]End at:" + time.strftime('%Y-%m-%d %X', time.localtime()))
 
 
 
     def split_raw_string_into_sentence_process(self, raw_string, sign_list):
-        #print "start pre process at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        #print "Start pre process at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        logging.info("[bidirectional_matching_algorithm][split_raw_string_into_sentence_process]Start pre process at " + time.strftime('%Y-%m-%d %X', time.localtime()))
         reversed_split_index_list = map(lambda sign: self.find_index(raw_string = raw_string, sign = sign), sign_list)
         reversed_split_index_list = list( sorted(set(sum(reversed_split_index_list, [])), reverse=True) )
         #print "reversed_split_index_list:", reversed_split_index_list
+        logging.info("[bidirectional_matching_algorithm][split_raw_string_into_sentence_process]len(reversed_split_index_list):" % len(reversed_split_index_list))
 
         sentence_list = self.split_raw_string_into_sentence_list(raw_string = raw_string, reversed_split_index_list = reversed_split_index_list)
         #for sentence in sentence_list: print sentence
+        logging.info("[bidirectional_matching_algorithm][split_raw_string_into_sentence_process]len(sentence_list):" % len(sentence_list))
 
-        #print "end pre process at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        #print "End pre process at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        logging.info("[bidirectional_matching_algorithm][split_raw_string_into_sentence_process]End pre process at " + time.strftime('%Y-%m-%d %X', time.localtime()))
         return sentence_list
 
 
@@ -92,7 +115,7 @@ class bidirectional_matching_algorithm(object):
         essay_list = []
         cursor = self.con.cursor()
         try:
-            sql = """SELECT id, title, content FROM %s.%s WHERE id<5""" % (database_name, table_name)
+            sql = """SELECT id, title, content FROM %s.%s""" % (database_name, table_name)
             cursor.execute(sql)
             essay_tuple = cursor.fetchall()
             """
@@ -118,17 +141,27 @@ class bidirectional_matching_algorithm(object):
                         if type(content) != unicode: content = unicode(content, "utf8")
                         essay_list.append([id, title, content])
                     except:
+                        """
                         print "transform encoding to unicode failed."
                         print "essay_tuple[0][0]:", essay_tuple[0][0]
                         print "essay_tuple[0][1]:", essay_tuple[0][1]
                         print "essay_tuple[0][2]:", essay_tuple[0][2]
+                        """
+                        logging.info("[bidirectional_matching_algorithm][get_essay_list]Transform encoding to unicode failed.")
+                        logging.info("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][0]:", essay_tuple[0][0])
+                        logging.info("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][1]:", essay_tuple[0][1])
+                        logging.info("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][2]:", essay_tuple[0][2])
                         continue
         except MySQLdb.Error, e:
-            print "failed in selecting stopwords from table %s database %s." % (table_name, database_name)
-            print "MySQL Error %d: %s." % (e.args[0], e.args[1])
+            #print "Failed in selecting stopwords from table %s database %s." % (table_name, database_name)
+            #print "MySQL Error %d: %s." % (e.args[0], e.args[1])
+            logging.error("[bidirectional_matching_algorithm][get_essay_list]Failed in selecting stopwords from table %s database %s." % (table_name, database_name))
+            logging.error("[bidirectional_matching_algorithm][get_essay_list]MySQL Error %d: %s." % (e.args[0], e.args[1]))
 
-        print "Get essay list successfully."
-        print "Get essay record %s." % (len(essay_list))
+        #print "Get essay list successfully."
+        #print "Get essay record %s." % (len(essay_list))
+        logging.info("[bidirectional_matching_algorithm][get_essay_list]Get essay list successfully.")
+        logging.info("[bidirectional_matching_algorithm][get_essay_list]Get essay record %s." % (len(essay_list)))
         return essay_list
 
 
@@ -149,13 +182,18 @@ class bidirectional_matching_algorithm(object):
                         if type(word) != unicode: word = unicode(word, "utf8")
                         word_list.append(word)
                     except:
-                        print "failed in transforming word %s to unicode form." % word
-                        print "word %s %s" % (word, type(word))
+                        #print "Failed in transforming word %s to unicode form." % word
+                        #print "word %s %s" % (word, type(word))
+                        logging.error("[bidirectional_matching_algorithm][get_word_list]Failed in transforming word %s to unicode form." % word)
+                        logging.error("[bidirectional_matching_algorithm][get_word_list]word %s %s" % (word, type(word)))
                         continue
-            print "get words %s from database successfully." % len(word_list)
+            #print "get words %s from database successfully." % len(word_list)
+            logging.info("[bidirectional_matching_algorithm][get_word_list]get words %s from database successfully." % len(word_list))
         except MySQLdb.Error, e:
-            print 'failed in selecting words from database %s.' % database_name
-            print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            #print 'failed in selecting words from database %s.' % database_name
+            #print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            logging.error("[bidirectional_matching_algorithm][get_word_list]Failed in selecting words from database %s." % database_name)
+            logging.error("[bidirectional_matching_algorithm][get_word_list]MySQL Error %d: %s." % (e.args[0], e.args[1]))
         return word_list
 
 
@@ -176,6 +214,11 @@ class bidirectional_matching_algorithm(object):
             print "stopword_tuple[0][0]:", stopword_tuple[0][0]
             print "type(stopword_tuple[0][0]):", type(stopword_tuple[0][0])
             '''
+            logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]len(stopword_tuple):", len(stopword_tuple))
+            logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]type(stopword_tuple):", type(stopword_tuple))
+            logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]stopword_tuple[0]:", stopword_tuple[0])
+            logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]stopword_tuple[0][0]:", stopword_tuple[0][0])
+            logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]type(stopword_tuple[0][0]):", type(stopword_tuple[0][0]))
             if len(stopword_tuple) > 0:
                 for idx in xrange(len(stopword_tuple)):
                     try:
@@ -183,13 +226,18 @@ class bidirectional_matching_algorithm(object):
                         if type(stopword) != unicode: stopword = unicode(stopword, "utf8")
                         stopword_list.append(stopword)
                     except:
-                        print "failed in transforming stopword %s to unicode form." % stopword_tuple[idx][0]
-                        print "stopword %s %s" % (stopword, type(stopword))
+                        #print "failed in transforming stopword %s to unicode form." % stopword_tuple[idx][0]
+                        #print "stopword %s %s" % (stopword, type(stopword))
+                        logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]Failed in transforming stopword %s to unicode form." % stopword_tuple[idx][0])
+                        logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]stopword %s %s" % (stopword, type(stopword)))
                         continue
-            print "get stopwords %s from database successfully." % len(stopword_list)
+            #print "get stopwords %s from database successfully." % len(stopword_list)
+            logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]Get stopwords %s from database successfully." % len(stopword_list))
         except MySQLdb.Error, e:
-            print 'failed in selecting stopwords from database %s.' % database_name
-            print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            #print 'Failed in selecting stopwords from database %s.' % database_name
+            #print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
+            logging.error("[bidirectional_matching_algorithm][get_sentence_stopword_list]Failed in selecting stopwords from database %s." % database_name)
+            logging.error("[bidirectional_matching_algorithm][get_sentence_stopword_list]MySQL Error %d: %s." % (e.args[0], e.args[1]))
         return stopword_list
 
 
@@ -211,11 +259,10 @@ class bidirectional_matching_algorithm(object):
                     try:
                         unicode_list.append(unicode(string_or_list[i], "utf8"))
                     except:
-                        print "[get_sth_unicode]The element of list's type is not UFT8."
-                        print "[get_sth_unicode]OR the original list's type is UNICODE."
-                        print "[get_sth_unicode]What it is:", string_or_list[i]
-                        print "[get_sth_unicode]What it's type:", type(string_or_list[i])
-                        print "[get_sth_unicode]Ignore this element in list(continue execute)."
+                        logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]The element of list's type is not UFT8.")
+                        logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]What it is:", string_or_list[i])
+                        logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]What it's type:", type(string_or_list[i]))
+                        logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]Ignore this element in list(continue execute).")
                         continue
             return unicode_list
         elif type(string_or_list) == str:
@@ -223,26 +270,29 @@ class bidirectional_matching_algorithm(object):
                 unicode_string = unicode(string_or_list, "utf8")
                 return unicode_string
             except:
-                print "[get_sth_unicode]The string's type is not utf8."
-                print "[get_sth_unicode]OR the string's type is UNICODE."
-                print "[get_sth_unicode]Return original string."
+                logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]The string's type is not utf8.")
+                logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]OR the string's type is UNICODE.")
+                logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]Return original string.")
                 return string_or_list
         else:
-            print "[get_sth_unicode]The type of input varible is neither LIST or STRING."
-            print "[get_sth_unicode]What it is:", string_or_list
-            print "[get_sth_unicode]What it's type:", type(string_or_list)
-            print '[get_sth_unicode]Return the special character:"".'
+            logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]The type of input varible is neither LIST or STRING.")
+            logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]What it is:", string_or_list)
+            logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]What it's type:", type(string_or_list))
+            logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]Return the special character:''.")
             string_or_list = ""
             return string_or_list
 
 
 
     def remove_sentence_stopwords_process(self, sentence_list, stopword_list):
-        print "start remove sentence list stopwords process at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        #print "Start remove sentence list stopwords process at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        logging.info("[bidirectional_matching_algorithm][remove_sentence_stopwords_process]Start remove sentence list stopwords process at " + time.strftime('%Y-%m-%d %X', time.localtime()))
         remove_stopword_sentence_list = map(lambda sentence: self.remove_sentence_stopwords(sentence = sentence, stopword_list = stopword_list), sentence_list)
-        print "len(remove_stopword_sentence_list):", len(remove_stopword_sentence_list)
+        #print "len(remove_stopword_sentence_list):", len(remove_stopword_sentence_list)
+        logging.info("[bidirectional_matching_algorithm][remove_sentence_stopwords_process]len(remove_stopword_sentence_list):", len(remove_stopword_sentence_list))
 
-        print "end remove sentence list stopwords process at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        #print "End remove sentence list stopwords process at " + time.strftime('%Y-%m-%d %X', time.localtime())
+        logging.info("[bidirectional_matching_algorithm][remove_sentence_stopwords_process]End remove sentence list stopwords process at " + time.strftime('%Y-%m-%d %X', time.localtime()))
         return remove_stopword_sentence_list
 
 
@@ -257,7 +307,8 @@ class bidirectional_matching_algorithm(object):
                     #print idx
                     cur_sentence = ''.join(cur_sentence.split(stopword))
             except:
-                print "[remove_sentence_stopwords]sentence is None."
+                #print "[remove_sentence_stopwords]sentence is None."
+                logging.error("[bidirectional_matching_algorithm][remove_sentence_stopwords]sentence is None.")
                 continue
         remove_stopwords_sentence = cur_sentence
         return remove_stopwords_sentence
@@ -291,9 +342,8 @@ class bidirectional_matching_algorithm(object):
         mm_segmentation_reult_list = self.maximum_matching(sentence = sentence, word_list = word_list)
         rmm_segmentation_result_list = self.reverse_maximun_matching(sentence = sentence, word_list = word_list)
 
-        print "MM:", len(mm_segmentation_reult_list)
-        print "RMM:", len(rmm_segmentation_result_list)
-        print
+        #print "MM:", len(mm_segmentation_reult_list), "RMM:", len(rmm_segmentation_result_list)
+        logging.info("[bidirectional_matching_algorithm][remove_sentence_stopwords]MM:", len(mm_segmentation_reult_list), "RMM:", len(rmm_segmentation_result_list))
         if len(rmm_segmentation_result_list) <= len(mm_segmentation_reult_list):
             final_segmentation_result_list = rmm_segmentation_result_list
         else:
@@ -317,6 +367,7 @@ class bidirectional_matching_algorithm(object):
                         sentence = sentence[1:]
         except:
             print "mm process terminate, sentence:%s." % sentence
+            logging.error("[bidirectional_matching_algorithm][remove_sentence_stopwords]MM process terminate, sentence:%s." % sentence)
         return segmentation_result_list
 
 
@@ -403,9 +454,6 @@ essay_word_dict = test.word_frequency_statistic(essay_word_2d_list = essay_segme
 print essay_word_dict
 for word in essay_word_dict: print word, essay_word_dict[word]
 '''
-
-
-
 
 
 
