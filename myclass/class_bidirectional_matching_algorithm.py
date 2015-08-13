@@ -23,6 +23,12 @@ import  logging
 ################################### PART2 CLASS && FUNCTION ###########################
 class bidirectional_matching_algorithm(object):
     def __init__(self, database_name):
+        """ Parse a data file
+        Args:
+            filename (str): input file name of the data file
+        Returns:
+            RDD: a RDD of parsed lines
+        """
         self.start = time.clock()
         logging.basicConfig(level = logging.DEBUG,
                   format = '%(asctime)s  %(filename)19s[line:%(lineno)3d]  %(levelname)5s  %(message)s',
@@ -147,10 +153,10 @@ class bidirectional_matching_algorithm(object):
                         print "essay_tuple[0][1]:", essay_tuple[0][1]
                         print "essay_tuple[0][2]:", essay_tuple[0][2]
                         """
-                        logging.info("[bidirectional_matching_algorithm][get_essay_list]Transform encoding to unicode failed.")
-                        logging.info("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][0]:", essay_tuple[0][0])
-                        logging.info("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][1]:", essay_tuple[0][1])
-                        logging.info("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][2]:", essay_tuple[0][2])
+                        logging.error("[bidirectional_matching_algorithm][get_essay_list]Transform encoding to unicode failed.")
+                        logging.error("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][0]:", essay_tuple[0][0])
+                        logging.error("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][1]:", essay_tuple[0][1])
+                        logging.error("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][2]:", essay_tuple[0][2])
                         continue
         except MySQLdb.Error, e:
             #print "Failed in selecting stopwords from table %s database %s." % (table_name, database_name)
@@ -228,8 +234,8 @@ class bidirectional_matching_algorithm(object):
                     except:
                         #print "failed in transforming stopword %s to unicode form." % stopword_tuple[idx][0]
                         #print "stopword %s %s" % (stopword, type(stopword))
-                        logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]Failed in transforming stopword %s to unicode form." % stopword_tuple[idx][0])
-                        logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]stopword %s %s" % (stopword, type(stopword)))
+                        logging.error("[bidirectional_matching_algorithm][get_sentence_stopword_list]Failed in transforming stopword %s to unicode form." % stopword_tuple[idx][0])
+                        logging.error("[bidirectional_matching_algorithm][get_sentence_stopword_list]stopword %s %s" % (stopword, type(stopword)))
                         continue
             #print "get stopwords %s from database successfully." % len(stopword_list)
             logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]Get stopwords %s from database successfully." % len(stopword_list))
@@ -366,7 +372,7 @@ class bidirectional_matching_algorithm(object):
                         segmentation_result_list.append(sentence[:1])
                         sentence = sentence[1:]
         except:
-            print "mm process terminate, sentence:%s." % sentence
+            #print "mm process terminate, sentence:%s." % sentence
             logging.error("[bidirectional_matching_algorithm][remove_sentence_stopwords]MM process terminate, sentence:%s." % sentence)
         return segmentation_result_list
 
