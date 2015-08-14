@@ -57,7 +57,7 @@ def main():
     WordsImporter.create_database(database_name = word_database_name)
     WordsImporter.create_table(database_name= word_database_name, table_name = word_table_name)
 
-    #WordsImporter.insert_words_from_file_2_db(file_dir = general_words_file_dir, database_name = database_name, table_name = table_name)
+    #WordsImporter3.insert_words_from_file_2_db(file_dir = general_words_file_dir, database_name = database_name, table_name = table_name)
     #WordsImporter.insert_stopwords_from_file_2_db(file_dir = stopwords_base_dir, database_name = database_name, table_name = table_name)
 
     WordsImporter.insert_modern_chinese_dictionary_2_db(file_name = modern_chinese_dictionary_file_name, database_name = word_database_name, table_name = word_table_name)
@@ -146,14 +146,11 @@ def main():
 
     essay_word_dict = Analyser.word_frequency_statistic(essay_word_2d_list = essay_segmentation_result_list)
     sorted_essay_word_tuple = Analyser.sort_dict(word_dict = essay_word_dict)
-    #print 'sorted_essay_word_tuple[:10]:', sorted_essay_word_tuple[:10]
     logging.info("sorted_essay_word_tuple[:10]:", sorted_essay_word_tuple[:10])
     top_n_words_tuple_list = Analyser.get_top_n_words(sorted_word_tuple_list = sorted_essay_word_tuple, n = top_n)
-    #print 'top_n_words_tuple:', top_n_words_tuple_list
     logging.info("top_n_words_tuple:", top_n_words_tuple_list)
     Analyser.show_top_n_words_dataframe(top_n_words_tuple_list = top_n_words_tuple_list)
     #Analyser.show_top_n_words_plot(top_n_words_tuple_list = top_n_words_tuple_list, n = top_n)
-    #print "len(essay_word_dict):", len(essay_word_dict)
     logging.info("[main]len(essay_word_dict):", len(essay_word_dict))
     '''
     for word in essay_word_dict.keys():
