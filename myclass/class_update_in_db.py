@@ -21,12 +21,17 @@ import time
 ################################### PART2 CLASS && FUNCTION ###########################
 class update_in_db(object):
     def __init__(self, database_name):
+        """ Initialize a entry of class.
+        Args:
+            database_name (str): input database name
+        Returns:
+            None
+        """
         self.start = time.clock()
         logging.basicConfig(level = logging.DEBUG,
                   format = '%(asctime)s  %(filename)19s[line:%(lineno)3d]  %(levelname)5s  %(message)s',
                   datefmt = '%y-%m-%d %H:%M:%S',
-                  #filename = 'class_create_databases.log',
-                  filename = './main.log',
+                  filename = '../main.log',
                   filemode = 'a')
         console = logging.StreamHandler()
         console.setLevel(logging.INFO)
@@ -38,18 +43,20 @@ class update_in_db(object):
         logging.info("[update_in_db][__init__]START at " + time.strftime('%Y-%m-%d %X', time.localtime()))
         try:
             self.con = MySQLdb.connect(host = "localhost", user = "root", passwd = "931209", db = database_name, charset = "utf8")
-            #print "Connect MySQL database successfully."
             logging.info("[update_in_db][__init__]Connect MySQL database successfully.")
         except MySQLdb.Error, e:
-            #print "Connect database failed."
-            #print 'MySQL Error %d: %s.' % (e.args[0], e.args[1])
             logging.error("[update_in_db][__init__]Connect database failed.")
             logging.error("[update_in_db][__init__]MySQL Error %d: %s." % (e.args[0], e.args[1]))
 
     def __del__(self):
+        """ Delete a entry of class.
+        Args:
+            None
+        Returns:
+            None
+        """
         self.con.close()
         self.stop = time.clock()
-        #print "Quit MySQL database successfully."
         logging.info("[update_in_db][__del__]Quit MySQL database successfully.")
         logging.info("[update_in_db][__del__]The class run time is : %.03f seconds" % (self.stop - self.start))
         logging.info("[update_in_db][__del__]END at:" + time.strftime('%Y-%m-%d %X', time.localtime()))
@@ -75,25 +82,26 @@ class update_in_db(object):
         pass
 
     def update_showtimes_field(self, word_dict, database_name, table_name):
+        """ Update the showtimes field in table(table_name) of database(database_name)
+         according to the result of words frequency statistic(word_dict).
+        Args:
+            word_dict       (dict): A dictionary contains all unique words in essay_word_2d_list,
+         which is a key-value form(key: word, value: word frequency).
+            database_name   (str): The name of database which will be updated.
+            table_name      (str): The name of table of database which will be updated.
+        Returns:
+            None
+        """
         cursor = self.con.cursor()
         word_list = map(lambda word: word.replace("'", '').replace('"', ""), word_dict.keys())
         showtimes_list = map(lambda showtimes: showtimes, word_dict.values())
         try:
-            # [VERSION 1]
             map(lambda word, showtimes: cursor.execute("""UPDATE wordsDB.chinese_word_table SET showtimes=showtimes+%s WHERE word='%s'""" % (showtimes, word)), word_list, showtimes_list)
             self.con.commit()
-            '''
-            # [VERSION 2]
-            for idx in xrange(len(word_list)):
-                word = word_list[idx]
-                showtimes = showtimes_list[idx]
-                sql = """UPDATE %s.%s SET showtimes=showtimes+%s WHERE word='%s'""" % (database_name, table_name, showtimes, word)
-                cursor.execute(sql)
-                self.con.commit()
-            '''
+            logging.info("[update_in_db][update_showtimes_field]Update words' showtimes failed.")
         except MySQLdb.Error, e:
             self.con.rollback()
-            #print "MySQL Error %d: %s." % (e.args[0], e.args[1])
+            logging.error("[update_in_db][update_showtimes_field]Update words' showtimes failed.")
             logging.error("[update_in_db][update_showtimes_field]MySQL Error %d: %s." % (e.args[0], e.args[1]))
 
 

@@ -15,16 +15,21 @@ import pandas
 import matplotlib.pyplot as plt
 import numpy as np
 import logging
-import  time
+import time
 ################################### PART2 CLASS && FUNCTION ###########################
 class segmentation_result_analyser(object):
     def __init__(self):
+        """ Initialize a entry of class.
+        Args:
+            database_name (str): input database name
+        Returns:
+            None
+        """
         self.start = time.clock()
         logging.basicConfig(level = logging.DEBUG,
                   format = '%(asctime)s  %(filename)19s[line:%(lineno)3d]  %(levelname)5s  %(message)s',
                   datefmt = '%y-%m-%d %H:%M:%S',
-                  #filename = 'class_create_databases.log',
-                  filename = './main.log',
+                  filename = '../main.log',
                   filemode = 'a')
         console = logging.StreamHandler()
         console.setLevel(logging.INFO)
@@ -35,13 +40,32 @@ class segmentation_result_analyser(object):
         logging.getLogger('').addHandler(console)
         logging.info("[segmentation_result_analyser][__init__]START at " + time.strftime('%Y-%m-%d %X', time.localtime()))
 
+
+
     def __del__(self):
+        """ Delete a entry of class.
+        Args:
+            None
+        Returns:
+            None
+        """
         self.stop = time.clock()
         logging.info("[segmentation_result_analyser][__del__]The class run time is : %.03f seconds" % (self.stop - self.start))
         logging.info("[segmentation_result_analyser][__del__]END at:" + time.strftime('%Y-%m-%d %X', time.localtime()))
 
+
+
     def word_frequency_statistic(self, essay_word_2d_list):
-        """essay_word_list is a 2-D list"""
+        """ Make words frequency statistic according the word list(essay_word_2d_list).
+         Return a key-value form dictionary contained all unique words in word list(essay_word_2d_list),
+         and it's a key-value form, which means key is the word, value is the frequency.
+        Args:
+            essay_word_2d_list  (2-D list): the essay's list, which has made the chinese word segmentation,
+         it only has chinese words in 2-D list form.
+        Returns:
+            word_dict           (dict): A dictionary contains all unique words in essay_word_2d_list,
+         which is a key-value form(key: word, value: word frequency).
+        """
         try:
             essay_word_2d_list = sum(sum(essay_word_2d_list, []), [])
         except:
@@ -58,33 +82,82 @@ class segmentation_result_analyser(object):
 
         return word_dict
 
+
+
     def sort_dict(self, word_dict):
-        sorted_word_tuple =  sorted(word_dict.items(), key=lambda d: d[1], reverse = True)
-        return sorted_word_tuple
+        """ Sort the dictionary(word_dict) according to the word frequency value of the word.
+        Args:
+            word_dict                (dict): A dictionary contains all unique words in
+         essay_word_2d_list, which is a key-value form(key: word, value: word frequency).
+        Returns:
+            sorted_word_tuple_list   (list): A list, its elements is tuple(has 2 elements),
+         1st element is word, 2rd one is value, and the tuple index in list is the word
+         frequency rank(descending according to word frequency) in list.
+        """
+        sorted_word_tuple_list =  sorted(word_dict.items(), key=lambda d: d[1], reverse = True)
+        return sorted_word_tuple_list
         # sort according to key
         #print sorted(dict1.items(), key=lambda d: d[0])
         # sort according to value
         #print sorted(dict1.items(), key=lambda d: d[1])
 
-    def get_top_n_words(self, sorted_word_tuple, n = 10):
-        if n >= len(sorted_word_tuple) or n < 1:
-            #print "input n is wrong, please try again."
+
+
+    def get_top_n_words(self, sorted_word_tuple_list, n = 10):
+        """ Get top n words according to the word frequency previously variable
+         (sorted_word_tuple_list, descending ranked).
+        Args:
+            sorted_word_tuple_list   (list): A list, its elements is tuple(has 2 elements),
+         1st element is word, 2rd one is value, and the tuple index in list is the word
+         frequency rank(descending according to word frequency) in list.
+            n                        (int): top n words, the n value.
+        Returns:
+            top_n_words_tuple_list   (list): A list, its elements is tuple(has 2 elements),
+         first element is word, second one is value, and the tuple index in list is the word
+         frequency rank(descending according to word frequency) in list. It only has the top
+         n tuple elements(according to word frequency ranked, second element in tuple).
+        """
+        if n >= len(sorted_word_tuple_list) or n < 1:
             logging.info("[segmentation_result_analyser][get_top_n_words]input n is wrong, please try again.")
             return
         else:
-            #print "sort by top %s words(according to 10 biggest show times)." % n
             logging.info("[segmentation_result_analyser][get_top_n_words]sort by top %s words(according to 10 biggest show times)." % n)
-            top_n_words_tuple_list = sorted_word_tuple[:n]
+            top_n_words_tuple_list = sorted_word_tuple_list[:n]
         return top_n_words_tuple_list
 
+
+
     def show_top_n_words_dataframe(self, top_n_words_tuple_list):
+        """ Show top n words's frequency according to the word frequency in pandas
+         library's DataFrame form.
+        Args:
+            top_n_words_tuple_list   (list): A list, its elements is tuple(has 2 elements),
+         first element is word, second one is value, and the tuple index in list is the word
+         frequency rank(descending according to word frequency) in list. It only has the top
+         n tuple elements(according to word frequency ranked, second element in tuple).
+        Returns:
+            None
+        """
         df = pandas.DataFrame( [[ij for ij in i] for i in top_n_words_tuple_list] )
         df.rename(columns={0: 'word', 1: 'showtimes'}, inplace = True)
         df = df.sort(['showtimes'], ascending = False)
         #print df.head()
         logging.info("[segmentation_result_analyser][get_top_n_words]df.head():", df.head())
 
+
+
     def show_top_n_words_plot(self, top_n_words_tuple_list, n):
+        """ Plot top n words's frequency bar chart according to the word frequency in pandas
+        library's DataFrame form.
+        Args:
+            top_n_words_tuple_list   (list): A list, its elements is tuple(has 2 elements),
+         first element is word, second one is value, and the tuple index in list is the word
+         frequency rank(descending according to word frequency) in list. It only has the top
+         n tuple elements(according to word frequency ranked, second element in tuple).
+            n                        (int): top n words, the n value.
+        Returns:
+            None
+        """
         logging.info("[segmentation_result_analyser][show_top_n_words_plot]")
         word_list = map(lambda tuple_word: tuple_word[0], top_n_words_tuple_list)
         showtimes_list = map(lambda tuple_word: tuple_word[1], top_n_words_tuple_list)
@@ -100,11 +173,14 @@ class segmentation_result_analyser(object):
         bar_entry = plt.bar(left = xrange(len(showtimes_list)),
                 height = showtimes_list,
                 width = .85,
-                alpha = 0.4, #opacity      Word Frequency
+                alpha = 0.4, # bar opacity
                 color = 'b',
                 label = 'Word Frequency')
         plt.legend(bar_entry, ['Word Frequency'], 'best')
         plt.show()
+
+
+
 ################################### PART3 CLASS TEST ##################################
 '''
 Analyser = segmentation_result_analyser()
@@ -112,9 +188,9 @@ testlist = [['a','z','c','d','f','g','k','e','y','e','y','e','y','e','y', 'f','g
 top_n = len(set(sum(testlist, [])))-1
 #print testlist
 word_dict = Analyser.word_frequency_statistic(essay_word_2d_list = testlist)
-sorted_word_tuple = Analyser.sort_dict(word_dict = word_dict)
-#print sorted_word_tuple
-top_n_words_tuple_list = Analyser.get_top_n_words(sorted_word_tuple = sorted_word_tuple, n = top_n)
+sorted_word_tuple_list = Analyser.sort_dict(word_dict = word_dict)
+#print sorted_word_tuple_list
+top_n_words_tuple_list = Analyser.get_top_n_words(sorted_word_tuple_list = sorted_word_tuple_list, n = top_n)
 Analyser.show_top_n_words_dataframe(top_n_words_tuple_list = top_n_words_tuple_list)
 Analyser.show_top_n_words_plot(top_n_words_tuple_list = top_n_words_tuple_list, n = top_n)
 '''

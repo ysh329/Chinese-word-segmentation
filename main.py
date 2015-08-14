@@ -29,6 +29,18 @@ from myclass.class_bidirectional_matching_algorithm import *
 from myclass.class_segmentation_result_analyser import *
 ################################### PART2 MAIN && FUNCTION ############################
 def main():
+    logging.basicConfig(level = logging.DEBUG,
+              format = '%(asctime)s  %(filename)19s[line:%(lineno)3d]  %(levelname)5s  %(message)s',
+              datefmt = '%y-%m-%d %H:%M:%S',
+              filename = './main.log',
+              filemode = 'a')
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+
+    formatter = logging.Formatter('%(asctime)s  %(filename)19s[line:%(lineno)3d]  %(levelname)5s  %(message)s')
+    console.setFormatter(formatter)
+
+    logging.getLogger('').addHandler(console)
     logging.info("[main]START at " + time.strftime('%Y-%m-%d %X', time.localtime()))
     '''
     # STEP1.(CLASS class_import_words_2_db.py)
@@ -136,7 +148,7 @@ def main():
     sorted_essay_word_tuple = Analyser.sort_dict(word_dict = essay_word_dict)
     #print 'sorted_essay_word_tuple[:10]:', sorted_essay_word_tuple[:10]
     logging.info("sorted_essay_word_tuple[:10]:", sorted_essay_word_tuple[:10])
-    top_n_words_tuple_list = Analyser.get_top_n_words(sorted_word_tuple = sorted_essay_word_tuple, n = top_n)
+    top_n_words_tuple_list = Analyser.get_top_n_words(sorted_word_tuple_list = sorted_essay_word_tuple, n = top_n)
     #print 'top_n_words_tuple:', top_n_words_tuple_list
     logging.info("top_n_words_tuple:", top_n_words_tuple_list)
     Analyser.show_top_n_words_dataframe(top_n_words_tuple_list = top_n_words_tuple_list)
