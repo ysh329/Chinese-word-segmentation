@@ -102,7 +102,7 @@ def main():
     removed_stopwords_essay_str_sentence_list = map(lambda essay_str_sentence_lis: Segmentation.remove_sentence_stopwords_process(sentence_list = essay_str_sentence_lis, stopword_list = stopword_list), essay_str_sentence_list)
     removed_blank_essay_str_sentence_list = map(lambda essay_str_sentence_list: Segmentation.remove_blank_str_in_list(raw_list = essay_str_sentence_list), removed_stopwords_essay_str_sentence_list)
     # essay_segmentation_result_list is a 2-D list variable.
-    essay_segmentation_result_list = map(lambda sentence: Segmentation.chinsese_segmentation_for_str_list(string_list = sentence, word_list = word_list), removed_blank_essay_str_sentence_list)
+    essay_segmentation_result_list = map(lambda sentence: Segmentation.chinese_segmentation_for_str_list(string_list = sentence, word_list = word_list), removed_blank_essay_str_sentence_list)
     '''
     # [VERSION 2] Dont keep the part of removing stopwords.
     # essay_str_sentence_list: 2-D list
@@ -114,7 +114,7 @@ def main():
     print "type(essay_str_sentence_list[0]):", type(essay_str_sentence_list[0])
     for stc in essay_str_sentence_list[0]: print stc
     '''
-    essay_segmentation_result_list = map(lambda sentence: Segmentation.chinsese_segmentation_for_str_list(string_list = sentence, word_list = word_list), essay_str_sentence_list)
+    essay_segmentation_result_list = map(lambda sentence: Segmentation.chinese_segmentation_for_str_list(string_list = sentence, word_list = word_list), essay_str_sentence_list)
     '''
     # [TEST]
     print "len(essay_segmentation_result_list):", len(essay_segmentation_result_list)
