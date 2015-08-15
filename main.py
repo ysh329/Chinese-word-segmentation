@@ -146,12 +146,12 @@ def main():
 
     essay_word_dict = Analyser.word_frequency_statistic(essay_word_2d_list = essay_segmentation_result_list)
     sorted_essay_word_tuple = Analyser.sort_dict(word_dict = essay_word_dict)
-    logging.info("sorted_essay_word_tuple[:10]:", str(sorted_essay_word_tuple[:10]))
+    logging.info("sorted_essay_word_tuple[:10]:%s" % str(sorted_essay_word_tuple[:10]))
     top_n_words_tuple_list = Analyser.get_top_n_words(sorted_word_tuple_list = sorted_essay_word_tuple, n = top_n)
-    logging.info("top_n_words_tuple:", str(top_n_words_tuple_list))
+    logging.info("top_n_words_tuple:%s" % str(top_n_words_tuple_list))
     Analyser.show_top_n_words_dataframe(top_n_words_tuple_list = top_n_words_tuple_list)
     #Analyser.show_top_n_words_plot(top_n_words_tuple_list = top_n_words_tuple_list, n = top_n)
-    logging.info("[main]len(essay_word_dict):", str(len(essay_word_dict)))
+    logging.info("[main]len(essay_word_dict):%d" %len(essay_word_dict))
     '''
     for word in essay_word_dict.keys():
         print word, essay_word_dict[word]

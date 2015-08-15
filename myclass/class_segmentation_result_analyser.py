@@ -143,7 +143,7 @@ class segmentation_result_analyser(object):
         df.rename(columns={0: 'word', 1: 'showtimes'}, inplace = True)
         df = df.sort(['showtimes'], ascending = False)
         #print df.head()
-        logging.info("[segmentation_result_analyser][get_top_n_words]df.head():", str(df.head()))
+        logging.info("[segmentation_result_analyser][get_top_n_words]df.head():%s" % str(df.head()))
 
 
 
