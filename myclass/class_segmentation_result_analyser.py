@@ -79,7 +79,7 @@ class segmentation_result_analyser(object):
         for word in word_list: word_dict[word] = 0
         for word in essay_word_2d_list:
             word_dict[word] += 1
-
+        logging.info("[segmentation_result_analyser][word_frequency_statistic]finished frequency statistic task of words.")
         return word_dict
 
 
@@ -95,6 +95,7 @@ class segmentation_result_analyser(object):
          frequency rank(descending according to word frequency) in list.
         """
         sorted_word_tuple_list =  sorted(word_dict.items(), key=lambda d: d[1], reverse = True)
+        logging.info("[segmentation_result_analyser][sort_dict]finished sort task of word dictionary.")
         return sorted_word_tuple_list
         # sort according to key
         #print sorted(dict1.items(), key=lambda d: d[0])
@@ -118,10 +119,10 @@ class segmentation_result_analyser(object):
          n tuple elements(according to word frequency ranked, second element in tuple).
         """
         if n >= len(sorted_word_tuple_list) or n < 1:
-            logging.info("[segmentation_result_analyser][get_top_n_words]input n is wrong, please try again.")
+            logging.error("[segmentation_result_analyser][get_top_n_words]input n is wrong, please try again.")
             return
         else:
-            logging.info("[segmentation_result_analyser][get_top_n_words]sort by top %s words(according to 10 biggest show times)." % n)
+            logging.info("[segmentation_result_analyser][get_top_n_words]sort by top %s words(biggest showtimes/frequency)." % n)
             top_n_words_tuple_list = sorted_word_tuple_list[:n]
         return top_n_words_tuple_list
 
@@ -142,7 +143,7 @@ class segmentation_result_analyser(object):
         df.rename(columns={0: 'word', 1: 'showtimes'}, inplace = True)
         df = df.sort(['showtimes'], ascending = False)
         #print df.head()
-        logging.info("[segmentation_result_analyser][get_top_n_words]df.head():", df.head())
+        logging.info("[segmentation_result_analyser][get_top_n_words]df.head():", str(df.head()))
 
 
 

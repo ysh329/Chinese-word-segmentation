@@ -75,10 +75,10 @@ class bidirectional_matching_algorithm(object):
         logging.info("[bidirectional_matching_algorithm][split_raw_string_into_sentence_process]Start pre process at " + time.strftime('%Y-%m-%d %X', time.localtime()))
         reversed_split_index_list = map(lambda sign: self.find_index(raw_string = raw_string, sign = sign), sign_list)
         reversed_split_index_list = list( sorted(set(sum(reversed_split_index_list, [])), reverse=True) )
-        logging.info("[bidirectional_matching_algorithm][split_raw_string_into_sentence_process]len(reversed_split_index_list):" % len(reversed_split_index_list))
+        logging.info("[bidirectional_matching_algorithm][split_raw_string_into_sentence_process]len(reversed_split_index_list):%s." % len(reversed_split_index_list))
 
         sentence_list = self.split_raw_string_into_sentence_list(raw_string = raw_string, reversed_split_index_list = reversed_split_index_list)
-        logging.info("[bidirectional_matching_algorithm][split_raw_string_into_sentence_process]len(sentence_list):" % len(sentence_list))
+        logging.info("[bidirectional_matching_algorithm][split_raw_string_into_sentence_process]len(sentence_list):%s." % len(sentence_list))
 
         logging.info("[bidirectional_matching_algorithm][split_raw_string_into_sentence_process]End pre process at " + time.strftime('%Y-%m-%d %X', time.localtime()))
         return sentence_list
@@ -147,15 +147,16 @@ class bidirectional_matching_algorithm(object):
             sql = """SELECT id, title, content FROM %s.%s""" % (database_name, table_name)
             cursor.execute(sql)
             essay_tuple = cursor.fetchall()
-            logging.info("[bidirectional_matching_algorithm][get_essay_list]len(essay_tuple):", len(essay_tuple))
-            logging.info("[bidirectional_matching_algorithm][get_essay_list]type(essay_tuple):", type(essay_tuple))
-            logging.info("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0]:", essay_tuple[0])
-            logging.info("[bidirectional_matching_algorithm][get_essay_list]len(essay_tuple[0]):", len(essay_tuple[0]))
-            logging.info("[bidirectional_matching_algorithm][get_essay_list]type(essay_tuple[0]):", type(essay_tuple[0]))
-            logging.info("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][0]:", essay_tuple[0][0])
-            logging.info("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][1]:", essay_tuple[0][1])
-            logging.info("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][2]:", essay_tuple[0][2])
-            logging.info("[bidirectional_matching_algorithm][get_essay_list]type(essay_tuple[0][1]):", type(essay_tuple[0][1]))
+
+            logging.info("[bidirectional_matching_algorithm][get_essay_list]len(essay_tuple):%d" % len(essay_tuple))
+            logging.info("[bidirectional_matching_algorithm][get_essay_list]type(essay_tuple):%s" % type(essay_tuple))
+            #logging.info("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0]:", essay_tuple[0])
+            #logging.info("[bidirectional_matching_algorithm][get_essay_list]len(essay_tuple[0]):", len(essay_tuple[0]))
+            logging.info("[bidirectional_matching_algorithm][get_essay_list]type(essay_tuple[0]):%s" % type(essay_tuple[0]))
+            #logging.info("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][0]:", essay_tuple[0][0])
+            #logging.info("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][1]:", essay_tuple[0][1])
+            #logging.info("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][2]:", essay_tuple[0][2])
+            logging.info("[bidirectional_matching_algorithm][get_essay_list]type(essay_tuple[0][1]):%s" % type(essay_tuple[0][1]))
 
             if len(essay_tuple) > 1:
                 for idx in xrange(len(essay_tuple)):
@@ -168,16 +169,16 @@ class bidirectional_matching_algorithm(object):
                         essay_list.append([id, title, content])
                     except:
                         logging.error("[bidirectional_matching_algorithm][get_essay_list]Transform encoding to unicode failed.")
-                        logging.error("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][0]:", essay_tuple[0][0])
-                        logging.error("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][1]:", essay_tuple[0][1])
-                        logging.error("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][2]:", essay_tuple[0][2])
+                        logging.error("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][0]:" + str(essay_tuple[0][0]))
+                        logging.error("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][1]:" + str(essay_tuple[0][1]))
+                        logging.error("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][2]:" + str(essay_tuple[0][2]))
                         continue
         except MySQLdb.Error, e:
             logging.error("[bidirectional_matching_algorithm][get_essay_list]Failed in selecting stopwords from table %s database %s." % (table_name, database_name))
             logging.error("[bidirectional_matching_algorithm][get_essay_list]MySQL Error %d: %s." % (e.args[0], e.args[1]))
 
         logging.info("[bidirectional_matching_algorithm][get_essay_list]Get essay list successfully.")
-        logging.info("[bidirectional_matching_algorithm][get_essay_list]Get essay record %s." % (len(essay_list)))
+        logging.info("[bidirectional_matching_algorithm][get_essay_list]Get essay record %d." % (len(essay_list)))
         return essay_list
 
 
@@ -230,11 +231,11 @@ class bidirectional_matching_algorithm(object):
             sql = """SELECT word FROM %s.%s WHERE type1='stopword'""" % (database_name, table_name)
             cursor.execute(sql)
             stopword_tuple = cursor.fetchall()
-            logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]len(stopword_tuple):", len(stopword_tuple))
-            logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]type(stopword_tuple):", type(stopword_tuple))
-            logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]stopword_tuple[0]:", stopword_tuple[0])
-            logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]stopword_tuple[0][0]:", stopword_tuple[0][0])
-            logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]type(stopword_tuple[0][0]):", type(stopword_tuple[0][0]))
+            logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]len(stopword_tuple):", str(len(stopword_tuple)))
+            logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]type(stopword_tuple):", str(type(stopword_tuple)))
+            logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]stopword_tuple[0]:", str(stopword_tuple[0]))
+            logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]stopword_tuple[0][0]:", str(stopword_tuple[0][0]))
+            logging.info("[bidirectional_matching_algorithm][get_sentence_stopword_list]type(stopword_tuple[0][0]):", str(type(stopword_tuple[0][0])))
             if len(stopword_tuple) > 0:
                 for idx in xrange(len(stopword_tuple)):
                     try:
@@ -278,8 +279,8 @@ class bidirectional_matching_algorithm(object):
                         unicode_list.append(unicode(string_or_list[i], "utf8"))
                     except:
                         logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]The element of list's type is not UFT8.")
-                        logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]What it is:", string_or_list[i])
-                        logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]What it's type:", type(string_or_list[i]))
+                        logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]What it is:", str(string_or_list[i]))
+                        logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]What it's type:", str(type(string_or_list[i])))
                         logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]Ignore this element in list(continue execute).")
                         continue
             return unicode_list
@@ -294,8 +295,8 @@ class bidirectional_matching_algorithm(object):
                 return string_or_list
         else:
             logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]The type of input varible is neither LIST or STRING.")
-            logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]What it is:", string_or_list)
-            logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]What it's type:", type(string_or_list))
+            logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]What it is:", str(string_or_list))
+            logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]What it's type:", str(type(string_or_list)))
             logging.error("[bidirectional_matching_algorithm][get_string_or_list_unicode]Return the special character:''.")
             string_or_list = ""
             return string_or_list
@@ -314,7 +315,7 @@ class bidirectional_matching_algorithm(object):
         """
         logging.info("[bidirectional_matching_algorithm][remove_sentence_stopwords_process]Start remove sentence list stopwords process at " + time.strftime('%Y-%m-%d %X', time.localtime()))
         remove_stopword_sentence_list = map(lambda sentence: self.remove_sentence_stopwords(sentence = sentence, stopword_list = stopword_list), sentence_list)
-        logging.info("[bidirectional_matching_algorithm][remove_sentence_stopwords_process]len(remove_stopword_sentence_list):", len(remove_stopword_sentence_list))
+        logging.info("[bidirectional_matching_algorithm][remove_sentence_stopwords_process]len(remove_stopword_sentence_list):", str(len(remove_stopword_sentence_list)))
         logging.info("[bidirectional_matching_algorithm][remove_sentence_stopwords_process]End remove sentence list stopwords process at " + time.strftime('%Y-%m-%d %X', time.localtime()))
         return remove_stopword_sentence_list
 
@@ -355,6 +356,7 @@ class bidirectional_matching_algorithm(object):
         joined string.
         """
         essays_joined_title_content_list = map(lambda essay: essay[1] + essay[2], essay_list)
+        logging.info("[bidirectional_matching_algorithm][join_essays_title_and_content_into_list]%s essays' title and content join successfully." % len(essay_list))
         return essays_joined_title_content_list
 
 
@@ -399,7 +401,7 @@ class bidirectional_matching_algorithm(object):
         """
         mm_segmentation_reult_list = self.maximum_matching(sentence = sentence, word_list = word_list)
         rmm_segmentation_result_list = self.reverse_maximun_matching(sentence = sentence, word_list = word_list)
-        logging.info("[bidirectional_matching_algorithm][remove_sentence_stopwords]MM:", len(mm_segmentation_reult_list), "RMM:", len(rmm_segmentation_result_list))
+        logging.info("[bidirectional_matching_algorithm][remove_sentence_stopwords]MM:%s,RMM:%s." % (len(mm_segmentation_reult_list), len(rmm_segmentation_result_list)))
         if len(rmm_segmentation_result_list) <= len(mm_segmentation_reult_list):
             final_segmentation_result_list = rmm_segmentation_result_list
         else:
@@ -430,7 +432,7 @@ class bidirectional_matching_algorithm(object):
                         segmentation_result_list.append(sentence[:1])
                         sentence = sentence[1:]
         except:
-            logging.error("[bidirectional_matching_algorithm][remove_sentence_stopwords]MM process terminate, sentence:%s." % sentence)
+            logging.error("[bidirectional_matching_algorithm][remove_sentence_stopwords]MM process terminate, sentence:%s" % sentence)
         return segmentation_result_list
 
 
@@ -472,7 +474,7 @@ class bidirectional_matching_algorithm(object):
         for word in word_list: word_dict[word] = 0
         for word in essay_word_list:
             word_dict[word] += 1
-
+        logging.info("[bidirectional_matching_algorithm][word_frequency_statistic]finished %s words frequency statistice." % len(word_dict))
         return word_dict
 ################################### PART3 CLASS TEST ##################################
 '''

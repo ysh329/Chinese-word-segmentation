@@ -192,10 +192,10 @@ class import_words_2_db(object):
             word_list = sum(map(lambda line: re.compile('…(.*)＠').findall(line.replace('"', '|').replace("'", "|").strip()), lines), [])
             word_list = map(lambda word: self.word_filter(word), word_list)
             meaning_list = sum(map(lambda line: re.compile('＠(.*)').findall(line.replace('"', '|').replace("'", "|").strip()), lines), [])
-            logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]len(word_list):", len(word_list))
-            logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]word_list[0]:", word_list[0])
-            logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]len(meaning_list):", len(meaning_list))
-            logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]meaning_list[0]:", meaning_list[0])
+            logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]len(word_list):" + str(len(word_list)))
+            logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]word_list[0]:" + str(word_list[0]))
+            logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]len(meaning_list):" + str(len(meaning_list)))
+            logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]meaning_list[0]:" + str(meaning_list[0]))
         except:
             logging.error("[import_words_2_db][insert_modern_chinese_dictionary_2_db]out of memory, failed in using paralleize method.")
             f.close()
@@ -209,7 +209,7 @@ class import_words_2_db(object):
         map(lambda word, meaning: self.find_word_and_insert_meaning_2_db(word = word, meaning = meaning, source = source, database_name = database_name, table_name = table_name), word_list, meaning_list)
 
         logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]finish insert words from modern Chinese dictionary to databse at " + time.strftime('%Y-%m-%d %X', time.localtime()))
-        logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]summation of words(or meanings):%d." % len(word_list))
+        logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]summation of words(or meanings):%s." % str(len(word_list)))
         logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]success inserted words' meaning(exist words before) num.:%d." % self.success_insert_meaing_counter)
         logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]success inserted words' meaning(Dont exist words before) num.:%d." % self.success_insert_meaing_dont_exist_word_counter)
         logging.info("[import_words_2_db][insert_modern_chinese_dictionary_2_db]insert success rate(exist words before):%f." % (self.success_insert_meaing_counter / float(len(word_list))))
@@ -238,9 +238,10 @@ class import_words_2_db(object):
             None
         """
         cursor = self.con.cursor()
-        if self.success_insert_meaing_counter % 100 == 0: print "self.success_insert_meaing_counter:", self.success_insert_meaing_counter
+        if self.success_insert_meaing_counter % 100 == 0:
+            logging.info("[import_words_2_db][find_word_and_insert_meaning_2_db]self.success_insert_meaing_counter:", str(self.success_insert_meaing_counter))
         if self.success_insert_meaing_dont_exist_word_counter % 10 == 0 and self.success_insert_meaing_dont_exist_word_counter != 0:
-            logging.info("[import_words_2_db][find_word_and_insert_meaning_2_db]self.success_insert_meaing_dont_exist_word_counter:", self.success_insert_meaing_dont_exist_word_counter)
+            logging.info("[import_words_2_db][find_word_and_insert_meaning_2_db]self.success_insert_meaing_dont_exist_word_counter:", str(self.success_insert_meaing_dont_exist_word_counter))
         try:
             cursor.execute("SELECT id FROM %s.%s WHERE word='%s'" % (database_name, table_name, word))
             word_id = cursor.fetchone()
@@ -379,12 +380,12 @@ class import_words_2_db(object):
 
         stopwords_file_directory_list = map(lambda file_name:os.path.join(file_dir, file_name), stopwords_file_list)
         source = "stopwords:" + ",".join(sum(map(lambda file_name: re.compile('(.*)_stopword').findall(file_name), cur_directory_list), []))
-        logging.info("[import_words_2_db][insert_stopwords_from_file_2_db]source:", source)
+        logging.info("[import_words_2_db][insert_stopwords_from_file_2_db]source:", str(source))
         f_stopwords_list = map(lambda file_dir: open(file_dir), stopwords_file_directory_list)
         stopwords_file_list = map(lambda f: f.readlines(), f_stopwords_list)
         stopwords_list = map(lambda stopword: stopword.strip(), set(sum(stopwords_file_list, [])))
         stopwords_list = filter(lambda stopword: stopword != "", stopwords_list)
-        logging.info("[import_words_2_db][insert_stopwords_from_file_2_db]len(stopwords_list):", len(stopwords_list))
+        logging.info("[import_words_2_db][insert_stopwords_from_file_2_db]len(stopwords_list):", str(len(stopwords_list)))
 
         self.stopwords_success_counter = 0
         self.stopwords_start_time = time.clock()
@@ -392,8 +393,8 @@ class import_words_2_db(object):
         self.stopwords_end_time = time.clock()
         logging.info("[import_words_2_db][insert_stopwords_from_file_2_db]insert task of stopwords finished at " + time.strftime('%Y-%m-%d %X', time.localtime()) + ".")
         logging.info("[import_words_2_db][insert_stopwords_from_file_2_db]elapsed time of stopwords insert task: %05f seconds." % (self.stopwords_end_time - self.stopwords_start_time))
-        logging.info("[import_words_2_db][insert_stopwords_from_file_2_db]all insert num.(contain failed records):", len(stopwords_list))
-        logging.info("[import_words_2_db][insert_stopwords_from_file_2_db]sucess insert num.:", self.stopwords_success_counter)
+        logging.info("[import_words_2_db][insert_stopwords_from_file_2_db]all insert num.(contain failed records):", str(len(stopwords_list)))
+        logging.info("[import_words_2_db][insert_stopwords_from_file_2_db]sucess insert num.:", str(self.stopwords_success_counter))
         logging.info("[import_words_2_db][insert_stopwords_from_file_2_db]insert success rate:%0.3f" % (self.stopwords_success_counter / float(len(stopwords_list))))
 
         # garbage collector
@@ -432,7 +433,7 @@ class import_words_2_db(object):
                 cursor.execute(sql)
                 self.con.commit()
             self.stopwords_success_counter += 1
-            logging.info("[import_words_2_db][insert_stopword_2_db]self.stopwords_success_counter:", self.stopwords_success_counter)
+            logging.info("[import_words_2_db][insert_stopword_2_db]self.stopwords_success_counter:", str(self.stopwords_success_counter))
         except MySQLdb.Error, e:
             self.con.rollback()
             logging.error("[import_words_2_db][insert_stopword_2_db]MySQL Error %d: %s." % (e.args[0], e.args[1]))
