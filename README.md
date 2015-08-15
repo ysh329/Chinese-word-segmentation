@@ -22,5 +22,3 @@ According to word frequency statistic result of essays, insert the statistic res
 ## Part 2.Unsolved problems
 - Can't insert stopwords(" and \ ) to database, but it works in MYSQL.  
  So if you want to insert symbols " and \, you can insert them in MySQL directly.
-- Some problems about logging print still exist  
- I guess it is because the logging sentence is not standard.
