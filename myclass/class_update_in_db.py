@@ -98,7 +98,7 @@ class update_in_db(object):
         try:
             map(lambda word, showtimes: cursor.execute("""UPDATE wordsDB.chinese_word_table SET showtimes=showtimes+%s WHERE word='%s'""" % (showtimes, word)), word_list, showtimes_list)
             self.con.commit()
-            logging.info("[update_in_db][update_showtimes_field]Update words' showtimes successfully.")
+            logging.info("[update_in_db][update_showtimes_field]Update words' showtimes(%d words) successfully." % cursor.rownumber)
         except MySQLdb.Error, e:
             self.con.rollback()
             logging.error("[update_in_db][update_showtimes_field]Update words' showtimes failed.")
