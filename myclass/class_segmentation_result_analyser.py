@@ -79,7 +79,7 @@ class segmentation_result_analyser(object):
         for word in word_list: word_dict[word] = 0
         for word in essay_word_2d_list:
             word_dict[word] += 1
-        logging.info("[segmentation_result_analyser][word_frequency_statistic]finished frequency statistic task of words.")
+        logging.info("[segmentation_result_analyser][word_frequency_statistic]finished frequency statistic task of words. words summation:%s(contains the words that don't exist in modern Chinese dictionary)" % len(word_dict))
         return word_dict
 
 
