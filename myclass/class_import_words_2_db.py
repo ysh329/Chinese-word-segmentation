@@ -113,10 +113,12 @@ class import_words_2_db(object):
                                 pinyin VARCHAR(100) NOT NULL,
                                 showtimes INT(11) NOT NULL DEFAULT 0,
                                 weight FLOAT(11) NOT NULL DEFAULT 0.0,
+                                corpus_scale INT(11),
                                 cixing VARCHAR(10) NOT NULL,
                                 type1 VARCHAR(30) NOT NULL,
                                 type2 VARCHAR(30) NOT NULL,
                                 source VARCHAR(50) NOT NULL,
+                                gram INT(11),
                                 meaning TEXT NOT NULL,
                                 UNIQUE (word)
                                 )""" % table_name)

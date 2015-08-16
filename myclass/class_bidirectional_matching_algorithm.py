@@ -150,7 +150,7 @@ class bidirectional_matching_algorithm(object):
 
             logging.info("[bidirectional_matching_algorithm][get_essay_list]len(essay_tuple):%d" % len(essay_tuple))
             logging.info("[bidirectional_matching_algorithm][get_essay_list]type(essay_tuple):%s" % type(essay_tuple))
-            logging.info("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0]:%s" % essay_tuple[0])
+            #logging.info("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0]:%s" % essay_tuple[0])
             logging.info("[bidirectional_matching_algorithm][get_essay_list]len(essay_tuple[0]):%s" % len(essay_tuple[0]))
             logging.info("[bidirectional_matching_algorithm][get_essay_list]type(essay_tuple[0]):%s" % type(essay_tuple[0]))
             logging.info("[bidirectional_matching_algorithm][get_essay_list]essay_tuple[0][0]:%s" % essay_tuple[0][0])
