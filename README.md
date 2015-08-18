@@ -1,6 +1,6 @@
 Chinese-word-segmentation
 =======
-Accomplish Chinese word segmentation by Python.
+Accomplish Chinese word segmentation based on MM(Max Matching) and RMM(Reverse Max Matching) by Python.
 
 ## Part 0.Description
 
