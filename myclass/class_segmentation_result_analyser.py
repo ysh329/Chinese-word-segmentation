@@ -178,7 +178,8 @@ class segmentation_result_analyser(object):
                 color = 'b',
                 label = 'Word Frequency')
         plt.legend(bar_entry, ['Word Frequency'], 'best')
-        plt.show()
+        plot_save_directory = "./data/output/result.png"
+        plt.savefig(plot_save_directory, dpi = 78)
 
 
 

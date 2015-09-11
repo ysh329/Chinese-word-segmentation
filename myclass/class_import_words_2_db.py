@@ -33,7 +33,7 @@ class import_words_2_db(object):
         logging.basicConfig(level = logging.DEBUG,
                   format = '%(asctime)s  %(filename)19s[line:%(lineno)3d]  %(levelname)5s  %(message)s',
                   datefmt = '%y-%m-%d %H:%M:%S',
-                  filename = '../main.log',
+                  filename = '../input/main.log',
                   filemode = 'a')
         console = logging.StreamHandler()
         console.setLevel(logging.INFO)
