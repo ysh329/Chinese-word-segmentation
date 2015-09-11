@@ -49,8 +49,8 @@ def main():
     # initial parameters
     word_database_name = "wordsDB"
     word_table_name = "chinese_word_table"
-    general_words_file_dir = "./data/sogou_cellbase-utf8.txt"
-    stopwords_base_dir = "./data/"
+    general_words_file_dir = "./data/input/sogou_cellbase-utf8.txt"
+    stopwords_base_dir = "./data/input"
     modern_chinese_dictionary_file_name = 'modern_chinese_dictionary.txt'
 
     WordsImporter = import_words_2_db()
